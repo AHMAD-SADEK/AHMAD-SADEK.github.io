@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ahmad Sadek — Personal Archive</title>
+  <meta name="description" content="Ahmad Sadek — a quiet archive of academic work, projects, research and ideas.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ivory: #f8f6f0;
+      --paper: #fcfbf7;
+      --ink: #262521;
+      --muted: #77736a;
+      --line: #ddd8cd;
+      --gold: #9b8355;
+      --gold-soft: #c7b894;
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --sans: "Manrope", Arial, sans-serif;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ivory);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .topline {
+      height: 1px;
+      background: var(--ink);
+      opacity: .18;
+    }
+
+    /* Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(248,246,240,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(38,37,33,.08);
+    }
+
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .brand {
+      font-family: var(--serif);
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+
+    .brand span { color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      transition: color .2s ease;
+    }
+
+    .nav-links a:hover { color: var(--ink); }
+
+    /* Hero */
+    .hero {
+      min-height: 88vh;
+      display: flex;
+      align-items: center;
+      padding: 90px 0 110px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 80px;
+      align-items: end;
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 28px;
+    }
+
+    .kicker::before {
+      content: "";
+      width: 42px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(70px, 10vw, 148px);
+      font-weight: 500;
+      line-height: .78;
+      letter-spacing: -.055em;
+      max-width: 850px;
+    }
+
+    h1 em {
+      display: block;
+      color: var(--gold);
+      font-style: italic;
+      font-weight: 400;
+      margin-left: .55em;
+    }
+
+    .hero-copy {
+      padding-bottom: 8px;
+      max-width: 440px;
+    }
+
+    .hero-copy p {
+      font-family: var(--serif);
+      font-size: 25px;
+      line-height: 1.25;
+      color: #555149;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 28px;
+      margin-top: 35px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    /* Sections */
+    section {
+      padding: 110px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 45px;
+      margin-bottom: 55px;
+    }
+
+    .section-number {
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding-top: 8px;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(46px, 6vw, 76px);
+      font-weight: 500;
+      line-height: .95;
+      letter-spacing: -.035em;
+    }
+
+    .intro {
+      max-width: 720px;
+      font-family: var(--serif);
+      font-size: 27px;
+      line-height: 1.28;
+      color: #4e4b44;
+    }
+
+    /* Projects */
+    .project-status {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .projects {
+      border-top: 1px solid var(--line);
+    }
+
+    .project {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 28px;
+      align-items: center;
+      padding: 27px 0;
+      border-bottom: 1px solid var(--line);
+      transition: padding .25s ease, background .25s ease;
+    }
+
+    .project:hover {
+      padding-left: 12px;
+      padding-right: 12px;
+      background: rgba(255,255,255,.34);
+    }
+
+    .project-no {
+      font-family: var(--serif);
+      font-size: 18px;
+      color: var(--gold);
+    }
+
+    .project-main h3 {
+      font-family: var(--serif);
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .project-main p {
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 700px;
+    }
+
+    .project-year {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .project-arrow {
+      font-size: 21px;
+      color: var(--gold);
+      margin-left: 14px;
+    }
+
+    /* Archive / journey */
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .journey-item {
+      padding: 34px 28px;
+      border-right: 1px solid var(--line);
+    }
+
+    .journey-item:last-child { border-right: 0; }
+
+    .journey-year {
+      font-family: var(--serif);
+      font-size: 44px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 18px;
+    }
+
+    .journey-item h3 {
+      font-family: var(--serif);
+      font-size: 25px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .journey-item p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Skills */
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      max-width: 850px;
+    }
+
+    .skill {
+      padding: 9px 15px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #5d594f;
+      font-size: 12px;
+      background: rgba(255,255,255,.25);
+    }
+
+    /* Contact */
+    .contact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 70px;
+      align-items: end;
+    }
+
+    .contact-title {
+      font-family: var(--serif);
+      font-size: clamp(55px, 7vw, 92px);
+      line-height: .88;
+      font-weight: 500;
+      letter-spacing: -.04em;
+    }
+
+    .contact-right {
+      max-width: 430px;
+      justify-self: end;
+    }
+
+    .contact-right p {
+      color: var(--muted);
+      margin-bottom: 25px;
+    }
+
+    .link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid var(--ink);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .link::after { content: "↗"; color: var(--gold); }
+
+    /* Footer */
+    footer {
+      padding: 35px 0 50px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    /* Reveal */
+    .reveal {
+      animation: reveal .8s ease both;
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile */
+    @media (max-width: 800px) {
+      .wrap { width: min(100% - 30px, var(--max)); }
+
+      .nav-links { display: none; }
+
+      .hero {
+        min-height: auto;
+        padding: 90px 0 100px;
+      }
+
+      .hero-grid,
+      .contact {
+        grid-template-columns: 1fr;
+        gap: 45px;
+      }
+
+      h1 {
+        font-size: clamp(70px, 22vw, 110px);
+      }
+
+      .hero-copy p { font-size: 22px; }
+
+      .section-head {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 38px;
+      }
+
+      section { padding: 80px 0; }
+
+      .project {
+        grid-template-columns: 42px 1fr;
+        gap: 12px;
+      }
+
+      .project-year {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .project-arrow {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        margin: 0;
+      }
+
+      .journey {
+        grid-template-columns: 1fr;
+      }
+
+      .journey-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .journey-item:last-child { border-bottom: 0; }
+
+      .contact-right { justify-self: start; }
+
+      .footer-row { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topline"></div>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#">AHMAD <span>SADEK</span></a>
+
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#journey">Journey</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" style="border-top:0;">
+      <div class="wrap hero-grid reveal">
+
+        <div>
+          <div class="kicker">Personal Archive</div>
+
+          <h1>
+            Ahmad
+            <em>Sadek.</em>
+          </h1>
+        </div>
+
+        <div class="hero-copy">
+          <p>
+            A quiet record of what I learn,
+            build, research, and become.
+          </p>
+
+          <div class="hero-meta">
+            <span>University Student</span>
+            <span>Lebanon</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="wrap">
+
+        <div class="section-head">
+          <div class="section-number">01 — About</div>
+
+          <div>
+            <h2 class="section-title">
+              A journey,<br>
+              carefully documented.
+            </h2>
+          </div>
+        </div>
+
+        <p class="intro">
+          I am Ahmad Sadek, a university student interested in
+          learning deeply, building meaningful things, and keeping
+          a record of the work and ideas that shape my journey.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- WORK -->
+    <section id="work">
+      <div class="wrap">
+
+        <div class="section-head">
+          <div class="section-number">02 — Selected Work</div>
+
+          <div>
+            <h2 class="section-title">Projects</h2>
+          </div>
+        </div>
+
+        <div id="project-status" class="project-status">
+          Loading the archive…
+        </div>
+
+        <div id="projects" class="projects"></div>
+
+      </div>
+    </section>
+
+    <!-- JOURNEY -->
+    <section id="journey">
+      <div class="wrap">
+
+        <div class="section-head">
+          <div class="section-number">03 — Journey</div>
+
+          <div>
+            <h2 class="section-title">
+              The years<br>
+              ahead.
+            </h2>
+          </div>
+        </div>
+
+        <div class="journey">
+
+          <article class="journey-item">
+            <div class="journey-year">2026</div>
+            <h3>Foundation</h3>
+            <p>
+              Learning, experimenting, discovering interests,
+              and building the first pieces of the archive.
+            </p>
+          </article>
+
+          <article class="journey-item">
+            <div class="journey-year">2027</div>
+            <h3>Exploration</h3>
+            <p>
+              Deeper projects, research, collaborations,
+              and new areas of knowledge.
+            </p>
+          </article>
+
+          <article class="journey-item">
+            <div class="journey-year">2028+</div>
+            <h3>Becoming</h3>
+            <p>
+              A growing body of work shaped by years of
+              learning, practice, and reflection.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section>
+      <div class="wrap">
+
+        <div class="section-head">
+          <div class="section-number">04 — Learning</div>
+
+          <div>
+            <h2 class="section-title">Skills & Interests</h2>
+          </div>
+        </div>
+
+        <div class="skill-list">
+          <span class="skill">Problem Solving</span>
+          <span class="skill">Programming</span>
+          <span class="skill">Research</span>
+          <span class="skill">Critical Thinking</span>
+          <span class="skill">Writing</span>
+          <span class="skill">Communication</span>
+          <span class="skill">Teamwork</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="wrap contact">
+
+        <h2 class="contact-title">
+          Let us<br>
+          connect.
+        </h2>
+
+        <div class="contact-right">
+          <p>
+            For projects, collaboration, academic work,
+            or simply to follow the journey.
+          </p>
+
+          <a
+            class="link"
+            href="https://github.com/AHMAD-SADEK"
+            target="_blank"
+            rel="noopener"
+          >
+            GitHub
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <span>© <span id="year"></span> Ahmad Sadek</span>
+      <span>Personal Archive</span>
+    </div>
+  </footer>
+
+  <script>
+    const OWNER = "AHMAD-SADEK";
+    const REPO = "AHMAD-SADEK.github.io";
+
+    const projectStatus = document.getElementById("project-status");
+    const projects = document.getElementById("projects");
+
+    function escapeHTML(value) {
+      const div = document.createElement("div");
+      div.textContent = value || "";
+      return div.innerHTML;
+    }
+
+    async function loadProjects() {
+      try {
+        const response = await fetch(
+          `https://api.github.com/repos/${OWNER}/${REPO}/issues?labels=project&state=all&per_page=100`
+        );
+
+        if (!response.ok) throw new Error("GitHub API error");
+
+        const issues = await response.json();
+
+        const items = issues.filter(issue => !issue.pull_request);
+
+        if (!items.length) {
+          projectStatus.textContent =
+            "The archive is waiting for its first project.";
+          return;
+        }
+
+        projectStatus.textContent =
+          `${items.length} ${items.length === 1 ? "entry" : "entries"} in the archive`;
+
+        items.forEach((item, index) => {
+          const date = new Date(item.created_at).getFullYear();
+
+          const article = document.createElement("article");
+          article.className = "project";
+
+          article.innerHTML = `
+            <div class="project-no">
+              ${String(index + 1).padStart(2, "0")}
+            </div>
+
+            <div class="project-main">
+              <h3>${escapeHTML(item.title)}</h3>
+              <p>
+                ${escapeHTML(
+                  (item.body || "A project in Ahmad's personal archive.")
+                    .replace(/\s+/g, " ")
+                    .slice(0, 180)
+                )}
+              </p>
+            </div>
+
+            <div class="project-year">
+              ${date}
+              <a
+                class="project-arrow"
+                href="${item.html_url}"
+                target="_blank"
+                rel="noopener"
+                aria-label="Open project"
+              >↗</a>
+            </div>
+          `;
+
+          projects.appendChild(article);
+        });
+
+      } catch (error) {
+        console.error(error);
+        projectStatus.textContent =
+          "Projects will appear here as the archive grows.";
+      }
+    }
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    loadProjects();
+  </script>
+
+</body>
+</html>
