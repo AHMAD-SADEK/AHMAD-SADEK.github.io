@@ -1,0 +1,136 @@
+name: Article / مقال
+description: Publish an article, essay, reflection, or long-form piece
+title: "[Article] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Ahmad Sadek — Article
+        اكتب المادة هنا، ثم اختر **Published** فقط عندما تكون جاهزة للظهور على الموقع.
+
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content Type
+      options:
+        - Article / مقال
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: اختر القسم / Choose the section
+      options:
+        - Medicine & Pharmacy / الطب والصيدلة
+        - Engineering & Technology / الهندسة والتقنية
+        - Thought & Philosophy / الفكر والفلسفة
+        - Personal / المساحة الشخصية
+        - Academic / أكاديمي
+        - General / عام
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic / العربية
+        - English / English
+        - Bilingual / ثنائية اللغة
+    validations:
+      required: true
+
+  - type: dropdown
+    id: publication_status
+    attributes:
+      label: Publication Status
+      description: Published = يظهر للعامة / Draft = يبقى مخفيًا
+      options:
+        - Published / منشور
+        - Draft / مسودة
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: عنوان المقال
+    validations:
+      required: true
+
+  - type: input
+    id: subtitle
+    attributes:
+      label: Subtitle
+      description: عنوان فرعي اختياري
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      value: Ahmad Sadek
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      placeholder: YYYY-MM-DD
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: افصل الوسوم بفواصل
+
+  - type: input
+    id: reading_time
+    attributes:
+      label: Reading Time
+      placeholder: 7 min
+
+  - type: textarea
+    id: cover_image
+    attributes:
+      label: Cover Image
+      description: يمكنك سحب صورة إلى هذا الحقل أو وضع رابطها.
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: Abstract / Summary
+      description: ملخص قصير يظهر قبل النص.
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: المحتوى الكامل. Markdown والصور والروابط مدعومة.
+      placeholder: Start writing here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: second_language
+    attributes:
+      label: Second Language Version
+      description: استخدم هذا الحقل فقط إذا كان للمادة نسخة باللغة الثانية.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: المراجع والمصادر.
+
+  - type: textarea
+    id: pdf_files
+    attributes:
+      label: PDF / Files
+      description: اسحب ملف PDF أو أي ملف داعم إلى هذا الحقل.
+
