@@ -1,0 +1,153 @@
+name: Research / بحث
+description: Publish a research paper, review, or scientific study
+title: "[Research] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Ahmad Sadek — Research
+        هذا النموذج مخصص للأبحاث والدراسات والمراجعات العلمية.
+
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content Type
+      options:
+        - Research / بحث
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Medicine & Pharmacy / الطب والصيدلة
+        - Engineering & Technology / الهندسة والتقنية
+        - Thought & Philosophy / الفكر والفلسفة
+        - Academic / أكاديمي
+        - General / عام
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic / العربية
+        - English / English
+        - Bilingual / ثنائية اللغة
+    validations:
+      required: true
+
+  - type: dropdown
+    id: publication_status
+    attributes:
+      label: Publication Status
+      options:
+        - Published / منشور
+        - Draft / مسودة
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+    validations:
+      required: true
+
+  - type: input
+    id: subtitle
+    attributes:
+      label: Subtitle
+
+  - type: input
+    id: authors
+    attributes:
+      label: Authors
+      placeholder: Ahmad Sadek; Co-author
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      placeholder: YYYY-MM-DD
+
+  - type: input
+    id: keywords
+    attributes:
+      label: Keywords
+      placeholder: keyword, keyword, keyword
+
+  - type: textarea
+    id: cover_image
+    attributes:
+      label: Cover Image
+      description: اختياري — اسحب صورة أو ضع رابطًا.
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: Abstract / Summary
+      description: ملخص البحث.
+    validations:
+      required: true
+
+  - type: textarea
+    id: introduction
+    attributes:
+      label: Introduction
+      description: المقدمة
+
+  - type: textarea
+    id: methodology
+    attributes:
+      label: Methodology
+      description: المنهجية
+
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: النتائج
+
+  - type: textarea
+    id: discussion
+    attributes:
+      label: Discussion
+      description: المناقشة
+
+  - type: textarea
+    id: conclusion
+    attributes:
+      label: Conclusion
+      description: الخلاصة
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: أي نص إضافي أو ملاحظات تكميلية.
+
+  - type: textarea
+    id: second_language
+    attributes:
+      label: Second Language Version
+      description: النسخة باللغة الثانية إذا كانت موجودة.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: المراجع العلمية.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pdf_files
+    attributes:
+      label: PDF / Files
+      description: اسحب البحث بصيغة PDF أو أي ملف داعم.
