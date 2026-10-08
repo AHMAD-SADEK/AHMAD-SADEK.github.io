@@ -24,7 +24,8 @@ jobs:
           fi
 
           rm -rf assets archive writing research books projects pharmacy engineering thought personal ideas about contact entry data tools
-          rm -rf .github/ISSUE_TEMPLATE .github/workflows
+          rm -rf .github/ISSUE_TEMPLATE
+          rm -f .github/workflows/install-site.yml
           rm -f index.html 404.html .nojekyll README-ARCHIVE.md
 
           unzip -o "$ZIP_FILE" -d .
