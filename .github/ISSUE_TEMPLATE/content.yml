@@ -82,7 +82,7 @@ body:
     attributes:
       label: Date
       description: التاريخ بصيغة YYYY-MM-DD
-      placeholder: 2026-10-08
+      placeholder: "2026-10-08"
 
   - type: input
     id: tags
