@@ -392,6 +392,24 @@ function cover(issue){
 }
 function clean(body){return (body||"").replace(/^---[\s\S]*?---/m,"").replace(/^(Title|Subtitle|Category|Date|Author|Authors|Cover Image|Tags|Language|Reading Time|References)\s*:\s*.*$/gmi,"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^#+\s+/gm,"").replace(/[*_`>~-]/g,"").replace(/\s+/g," ").trim()}
 function contentText(issue){const type=getType(issue);if(type==="research"){const parts=[];[["Introduction","Introduction"],["Methodology","Methodology"],["Results","Results"],["Discussion","Discussion"],["Conclusion","Conclusion"],["Content","Content"]].forEach(([k,h])=>{const v=field(issue.body,k);if(v)parts.push("## "+h+"\n\n"+v)});return parts.join("\n\n")||issue.body||""}return field(issue.body,"Content")||issue.body||""}
+function fileAttachments(issue){
+  const raw=field(issue.body,"PDF / Files")||field(issue.body,"Files");
+  if(!raw)return "";
+  const links=[];
+  const re=/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  let m;
+  while((m=re.exec(raw))!==null)links.push({name:m[1].trim(),url:m[2]});
+  if(!links.length){
+    const urls=raw.match(/https?:\/\/[^\s)]+/g)||[];
+    urls.forEach(url=>links.push({name:url.split("/").pop().split("?")[0]||"Open attached file",url}));
+  }
+  const unique=links.filter((x,i,a)=>a.findIndex(y=>y.url===x.url)===i);
+  if(!unique.length)return "";
+  return unique.map(x=>{
+    const name=escapeHTML(x.name),url=escapeAttr(x.url),isPdf=/\.pdf(?:$|[?#])/i.test(x.url)||/\.pdf$/i.test(x.name);
+    return `<div style="margin:18px 0"><p><a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${name} — ${document.documentElement.lang==="ar"?"فتح / تنزيل الملف":"Open / download file"} ↗</a></p>${isPdf?`<iframe title="${name}" src="${url}" loading="lazy" style="width:100%;height:78vh;min-height:520px;border:1px solid var(--line);background:white;border-radius:3px" allow="fullscreen"></iframe>`:""}</div>`;
+  }).join("");
+}
 function markdown(text){
   let s=escapeHTML(text||"");
   s=s.replace(/^###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^##\s+(.+)$/gm,"<h3>$1</h3>").replace(/^#\s+(.+)$/gm,"<h2>$1</h2>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>");
@@ -454,9 +472,9 @@ function renderFeatured(){
 function renderArticle(num){
   const issue=archiveItems.find(x=>String(x.number)===String(num)),host=document.getElementById("dynamicArticle");if(!host)return;
   if(!issue){host.innerHTML=`<div class="section"><div class="empty">${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</div></div>`;return;}
-  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=lang==="ar"&&field(issue.body,"Second Language Version")?field(issue.body,"Second Language Version"):contentText(issue),abstract=field(issue.body,"Abstract / Summary")||field(issue.body,"Description / Summary")||field(issue.body,"Summary"),refs=field(issue.body,"References")||field(issue.body,"References / Notes");
+  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=lang==="ar"&&field(issue.body,"Second Language Version")?field(issue.body,"Second Language Version"):contentText(issue),abstract=field(issue.body,"Abstract / Summary")||field(issue.body,"Description / Summary")||field(issue.body,"Summary"),refs=field(issue.body,"References")||field(issue.body,"References / Notes"),files=fileAttachments(issue);
   const meta=[field(issue.body,"Date")||new Date(issue.created_at).toISOString().slice(0,10),typeLabel(type,lang),categoryLabel(cat,lang)].filter(Boolean).join(" · ");
-  host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(typeLabel(type,lang))}</div><h2>${escapeHTML(title(issue))}</h2>${field(issue.body,"Subtitle")?`<div class="article-subtitle">${escapeHTML(field(issue.body,"Subtitle"))}</div>`:""}<div class="article-meta">${escapeHTML(meta)}</div>${cv?`<img class="cover" src="${escapeAttr(cv)}" alt="">`:""}${abstract?`<div class="prose"><h3>${lang==="ar"?"الملخص":"Abstract"}</h3>${markdown(abstract)}</div>`:""}<div class="prose">${markdown(body)}</div>${refs?`<div class="prose"><h3>${lang==="ar"?"المراجع":"References"}</h3>${markdown(refs)}</div>`:""}<p style="margin-top:50px"><a class="text-link" href="${escapeAttr(issue.html_url)}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`;
+  host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(typeLabel(type,lang))}</div><h2>${escapeHTML(title(issue))}</h2>${field(issue.body,"Subtitle")?`<div class="article-subtitle">${escapeHTML(field(issue.body,"Subtitle"))}</div>`:""}<div class="article-meta">${escapeHTML(meta)}</div>${cv?`<img class="cover" src="${escapeAttr(cv)}" alt="">`:""}${abstract?`<div class="prose"><h3>${lang==="ar"?"الملخص":"Abstract"}</h3>${markdown(abstract)}</div>`:""}<div class="prose">${markdown(body)}</div>${refs?`<div class="prose"><h3>${lang==="ar"?"المراجع":"References"}</h3>${markdown(refs)}</div>`:""}${files?`<div class="prose"><h3>${lang==="ar"?"الملفات المرفقة":"Attached files"}</h3>${files}</div>`:""}<p style="margin-top:50px"><a class="text-link" href="${escapeAttr(issue.html_url)}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`;
   observeMotion(host);
 }
 function renderRoute(){
