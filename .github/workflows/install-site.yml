@@ -1,28 +1,40 @@
-name: Build Ahmad's Archive
+name: Install Ahmad Sadek site
+
 on:
-  push:
-    branches: [main]
-  issues:
-    types: [opened, edited, labeled, unlabeled, closed, reopened]
   workflow_dispatch:
+
 permissions:
   contents: write
-  issues: read
+
 jobs:
-  export:
+  install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Export published content
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python tools/export_issues.py
-      - name: Commit content data
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find and unpack the site package
         run: |
-          git config user.name "Ahmad Sadek Archive Bot"
+          ZIP_FILE=$(find . -maxdepth 1 -type f -name '*.zip' | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "No site ZIP found in repository root."
+            exit 1
+          fi
+
+          rm -rf assets archive writing research books projects pharmacy engineering thought personal ideas about contact entry data tools
+          rm -rf .github/ISSUE_TEMPLATE .github/workflows
+          rm -f index.html 404.html .nojekyll README-ARCHIVE.md
+
+          unzip -o "$ZIP_FILE" -d .
+          rm -f "$ZIP_FILE"
+
+      - name: Commit installed site
+        run: |
+          git config user.name "Ahmad Sadek Site Installer"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/content.json
+          git add -A
           git diff --cached --quiet && exit 0
-          git commit -m "Update published archive content"
+          git commit -m "Install Ahmad Sadek personal archive"
           git push
