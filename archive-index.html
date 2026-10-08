@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ahmad Sadek — Personal Archive</title>
+<meta name="description" content="Ahmad Sadek — Pharmacy Student, Researcher, Writer, and Curious Mind.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600&family=Noto+Kufi+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#f8f5ed;--paper:#fcfaf5;--ink:#2b2924;--muted:#756f65;
+  --line:#ddd7ca;--gold:#a18759;--gold-soft:#cbb993;
+  --accent:var(--gold);--accent-soft:var(--gold-soft);--max:1220px;
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --arabic:"Amiri",Georgia,serif;
+  --arabic-ui:"Noto Kufi Arabic","Segoe UI",sans-serif;
+  --sans:"Manrope","Segoe UI",Arial,sans-serif
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ivory);color:var(--ink);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none;cursor:pointer}
+button,input{font:inherit}
+.site{width:min(var(--max),calc(100% - 64px));margin:auto}
+header{height:78px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;background:rgba(248,245,237,.95);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:11px}
+.monogram{width:34px;height:34px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font:700 14px var(--serif)}
+.brand-name{font:600 11px var(--sans);letter-spacing:.1em}
+.nav{display:flex;gap:23px;margin-left:auto}
+[dir="rtl"] .nav{margin-left:0;margin-right:auto}
+.nav a,.lang{font:500 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nav a:hover,.nav a[aria-current="page"],.lang.active{color:var(--ink)}
+.nav a{position:relative;transition:color .2s ease}
+.nav a:after{content:"";position:absolute;inset-inline:0;bottom:-7px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:center;transition:transform .25s ease}
+.nav a:hover:after,.nav a[aria-current="page"]:after{transform:scaleX(1)}
+.tools{display:flex;align-items:center;gap:8px}.menu-btn{display:none;border:0;background:none;color:var(--muted);font:500 10px var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.page{display:none}.page.active{display:block;animation:page-arrive .48s cubic-bezier(.2,.7,.25,1) both}
+@keyframes page-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes detail-arrive{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+[data-motion="pending"]{opacity:0;transform:translateY(18px);transition:opacity .62s ease,transform .62s cubic-bezier(.2,.7,.25,1)}
+[data-motion="visible"]{opacity:1;transform:none}
+.motion-row{animation:detail-arrive .42s both;animation-delay:calc(var(--motion-order,0) * 48ms)}
+.page.active .hero .eyebrow{animation:detail-arrive .55s .04s both}
+.page.active .hero h1{animation:detail-arrive .72s .1s both}
+.page.active .hero-grid>div:last-child{animation:detail-arrive .58s .2s both}
+.entry{transition:background-color .2s ease,border-color .2s ease}
+.entry:hover{background:rgba(120,67,78,.035)}
+.feature{transition:transform .3s ease,color .25s ease}
+.feature:hover{transform:translateY(-4px);color:var(--accent)}
+.hero{padding:132px 0 122px;border-bottom:1px solid var(--line)}
+.eyebrow,.section-label{font:500 10px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.hero-grid{display:grid;grid-template-columns:1.28fr .72fr;gap:86px;align-items:end;margin-top:42px}
+h1{margin:0;font:500 clamp(96px,13vw,184px)/.9 var(--serif);letter-spacing:-.04em}
+h1 [data-i="firstName"]{color:var(--accent)}
+.hero-lead{font:400 clamp(26px,2.7vw,36px)/1.11 var(--serif);max-width:430px;margin:0 0 23px}
+.hero-meta{font:500 10px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.text-link{display:inline-flex;align-items:center;gap:12px;border-bottom:1px solid var(--ink);padding-bottom:7px;font:500 10px var(--sans);letter-spacing:.13em;text-transform:uppercase}
+.text-link span{color:var(--accent);font-size:15px}
+.section{padding:112px 0;border-bottom:1px solid var(--line)}
+.split{display:grid;grid-template-columns:.29fr .71fr;gap:70px}
+.lead-text{margin:0;max-width:900px;font:400 clamp(41px,5vw,68px)/1.04 var(--serif);letter-spacing:-.035em}
+.heading-row{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:42px}
+.note{max-width:390px;color:var(--muted);font:400 13px/1.65 var(--sans)}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.feature{min-height:285px;padding:26px;border-right:1px solid var(--line)}
+.feature:last-child{border-right:0}
+.feature small,.garden small,.entry-type{font:500 9px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.feature h3{font:500 32px/1.05 var(--serif);margin:18px 0 0}
+.gardens{border-top:1px solid var(--line)}
+.garden{display:grid;grid-template-columns:55px 1fr 35px;gap:22px;align-items:start;padding:28px 0;border-bottom:1px solid var(--line);transition:.25s}
+.garden:hover{padding-left:14px;padding-right:14px;background:rgba(120,67,78,.035)}
+.garden-number{font:500 15px var(--serif);color:var(--accent)}
+.garden h3{margin:6px 0 8px;font:500 clamp(34px,4vw,53px)/.98 var(--serif);letter-spacing:-.025em}
+.garden p{max-width:680px;margin:0;color:var(--muted);font-size:13px}
+.arrow{color:var(--accent);font-size:18px;padding-top:6px}
+.library-grid{display:grid;grid-template-columns:1fr .45fr;gap:90px;align-items:center}
+.library-mark{min-height:390px;border:1px solid var(--line);display:grid;place-items:center;background:var(--paper)}
+.library-mark span{font:500 150px var(--serif);color:var(--accent-soft)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:38px}
+.contact-grid h2{margin:0;font:500 clamp(67px,8vw,106px)/.82 var(--serif);letter-spacing:-.045em}
+.contact-grid p{max-width:430px;color:var(--muted);font:400 14px/1.7 var(--sans);margin:0 0 28px}
+.email{font:400 17px var(--serif);border-bottom:1px solid var(--ink);padding-bottom:6px}
+.page-hero{padding:92px 0 78px;border-bottom:1px solid var(--line)}
+.page-hero h2{margin:33px 0 0;font:500 clamp(78px,11vw,150px)/.75 var(--serif);letter-spacing:-.06em}
+.page-intro{max-width:800px;margin:35px 0 0;font:400 29px/1.18 var(--serif)}
+.archive-tools{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:20px 0 25px}
+.search{flex:1;min-width:240px;border:0;border-bottom:1px solid var(--line);background:transparent;padding:12px 0;outline:none;font:400 23px var(--serif);color:var(--ink)}
+.search::placeholder{color:#9b958a}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{border:1px solid var(--line);background:transparent;color:var(--muted);padding:8px 13px;font:500 9px var(--sans);letter-spacing:.13em;text-transform:uppercase}
+.filter.active{border-color:var(--accent);color:var(--ink)}
+.entry-list{border-top:1px solid var(--line)}
+.entry{display:grid;grid-template-columns:74px 1fr 75px;gap:25px;padding:26px 0;border-bottom:1px solid var(--line)}
+.entry h3{margin:0 0 8px;font:500 34px/1.02 var(--serif)}
+.entry p{margin:0;color:var(--muted);font-size:13px}
+.entry-year{text-align:right;color:var(--muted);font:400 16px var(--serif)}
+.placeholder-note{padding:28px 0;color:var(--muted);font:400 20px var(--serif)}
+footer{display:flex;justify-content:space-between;padding:28px 0 46px;color:var(--muted);font:500 9px var(--sans);letter-spacing:.14em;text-transform:uppercase}
+
+/* Arabic system — intentionally different typography, not simply reversed English */
+[dir="rtl"] body{font-family:var(--arabic)}
+[dir="rtl"] .nav a,[dir="rtl"] .lang,[dir="rtl"] .brand-name,[dir="rtl"] .menu-btn,
+[dir="rtl"] .hero-meta,[dir="rtl"] .eyebrow,[dir="rtl"] .section-label,
+[dir="rtl"] .text-link,[dir="rtl"] .feature small,[dir="rtl"] .garden small,[dir="rtl"] .entry-type,[dir="rtl"] .filter{
+  font-family:var(--arabic-ui);letter-spacing:0;text-transform:none
+}
+[dir="rtl"] .brand{direction:rtl}
+[dir="rtl"] .hero-grid,[dir="rtl"] .split,[dir="rtl"] .library-grid,[dir="rtl"] .contact-grid{direction:rtl}
+[dir="rtl"] h1,[dir="rtl"] .lead-text,[dir="rtl"] .feature h3,[dir="rtl"] .garden h3,
+[dir="rtl"] .library-mark span,[dir="rtl"] .page-hero h2,[dir="rtl"] .page-intro,
+[dir="rtl"] .entry h3,[dir="rtl"] .placeholder-note,[dir="rtl"] .email,[dir="rtl"] .contact-grid h2{
+  font-family:var(--arabic)
+}
+[dir="rtl"] h1{font-size:clamp(86px,11vw,156px);line-height:1.18;letter-spacing:0;font-weight:700}
+[dir="rtl"] .hero-lead{font-family:var(--arabic);font-size:clamp(27px,3vw,39px);line-height:1.35}
+[dir="rtl"] .hero-meta{font-size:11px;font-weight:500}
+[dir="rtl"] .text-link{font-size:11px;font-weight:500}
+[dir="rtl"] .lead-text{font-size:clamp(35px,4.4vw,61px);line-height:1.32;letter-spacing:0}
+[dir="rtl"] .feature h3{font-size:31px;line-height:1.45;letter-spacing:0}
+[dir="rtl"] .garden h3{font-size:clamp(34px,4vw,54px);line-height:1.2;letter-spacing:0}
+[dir="rtl"] .garden p,[dir="rtl"] .note,[dir="rtl"] .contact-grid p,[dir="rtl"] .entry p{font-family:var(--arabic);font-size:16px;line-height:1.75}
+[dir="rtl"] .page-hero h2{font-size:clamp(66px,9vw,132px);line-height:1.02;letter-spacing:0}
+[dir="rtl"] .page-intro{font-size:30px;line-height:1.55}
+[dir="rtl"] .entry h3{font-size:36px;line-height:1.25}
+[dir="rtl"] .entry-year{text-align:left;font-family:var(--arabic)}
+[dir="rtl"] .email{font-size:20px;direction:ltr;display:inline-block}
+[dir="rtl"] footer{font-family:var(--arabic-ui);letter-spacing:0}
+[dir="rtl"] .text-link{flex-direction:row-reverse}
+[dir="rtl"] .contact-grid h2{font-size:clamp(64px,7vw,100px);line-height:1.02;letter-spacing:0}
+
+@media(max-width:880px){
+  .site{width:min(var(--max),calc(100% - 30px))}
+  header{height:70px}
+  .nav{display:none}
+  .menu-btn{display:block}
+  .hero{padding:90px 0 96px}
+  .hero-grid,.split,.library-grid,.contact-grid{grid-template-columns:1fr;gap:44px}
+  .hero-grid{margin-top:32px}
+  h1{font-size:clamp(74px,19vw,126px);line-height:.98}
+  .section{padding:82px 0}
+  .heading-row{flex-direction:column;align-items:flex-start}
+  .feature-grid{grid-template-columns:1fr}
+  .feature{border-right:0;border-bottom:1px solid var(--line)}
+  .feature:last-child{border-bottom:0}
+  .garden{grid-template-columns:38px 1fr 20px;gap:12px}
+  .page-hero h2{font-size:clamp(66px,19vw,120px)}
+  .contact-grid h2{font-size:72px}
+  footer{flex-direction:column;gap:10px}
+  [dir="rtl"] h1{font-size:clamp(68px,18vw,108px);line-height:1.22}
+  [dir="rtl"] .lead-text{font-size:clamp(31px,9vw,52px)}
+  [dir="rtl"] .page-hero h2{font-size:clamp(56px,16vw,105px)}
+  [dir="rtl"] .contact-grid h2{font-size:67px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}[data-motion="pending"]{opacity:1;transform:none}}
+</style>
+<style id="dynamic-content-style">
+.content-loading{padding:28px 0;color:var(--muted);font:400 20px var(--serif)}
+.content-error{padding:28px 0;color:var(--muted);font:400 16px var(--sans);border-top:1px solid var(--line)}
+.article-page{max-width:900px;margin:auto;padding:90px 0 120px}.article-page .back{display:inline-flex;align-items:center;gap:10px;color:var(--accent);font:500 10px var(--sans);letter-spacing:.13em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:7px}.article-page .article-type{margin-top:55px;color:var(--accent);font:500 10px var(--sans);letter-spacing:.18em;text-transform:uppercase}.article-page h2{margin:16px 0;font:500 clamp(54px,8vw,98px)/.9 var(--serif);letter-spacing:-.05em}.article-page .article-subtitle{font:400 25px/1.25 var(--serif);color:var(--muted);max-width:760px}.article-page .article-meta{margin-top:24px;font:500 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.article-page .cover{width:100%;max-height:580px;object-fit:cover;border:1px solid var(--line);margin-top:42px}.article-page .prose{margin-top:58px;font:400 21px/1.85 var(--serif)}.article-page .prose p{margin:0 0 24px}.article-page .prose h3{margin:46px 0 14px;font:500 39px/1.08 var(--serif)}
+[dir="rtl"] .article-page{text-align:right}.article-page .article-meta,[dir="rtl"] .article-page .article-meta,[dir="rtl"] .article-page .article-type,[dir="rtl"] .article-page .back{font-family:var(--arabic-ui)}[dir="rtl"] .article-page h2,[dir="rtl"] .article-page .article-subtitle,[dir="rtl"] .article-page .prose,[dir="rtl"] .article-page .prose h3{font-family:var(--arabic);letter-spacing:0}[dir="rtl"] .article-page h2{line-height:1.08}[dir="rtl"] .article-page .article-subtitle{font-size:27px;line-height:1.55}[dir="rtl"] .article-page .prose{font-size:23px;line-height:2}
+@media(max-width:880px){.article-page{padding:65px 0 95px}.article-page h2{font-size:clamp(50px,15vw,88px)}[dir="rtl"] .article-page h2{font-size:clamp(48px,14vw,84px)}}
+.site,main,.page,.article-page,.entry,.entry>div{min-width:0}
+.article-page{width:100%;box-sizing:border-box}
+.article-page h2,.article-page .article-subtitle,.article-page .prose,.article-page .prose p{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.article-page .prose *{min-width:0;max-width:100%}
+.entry{grid-template-columns:minmax(0,74px) minmax(0,1fr) minmax(0,75px)}
+.entry>div{min-width:0}
+.entry h3,.entry p{overflow-wrap:anywhere}
+@media(max-width:880px){.entry{grid-template-columns:minmax(0,1fr) auto;gap:9px 14px;padding:21px 0}.entry-type{grid-column:1;grid-row:1}.entry>div:nth-child(2){grid-column:1 / -1;grid-row:2}.entry-year{grid-column:2;grid-row:1}}
+</style>
+</head>
+<body>
+<div class="site">
+<header>
+<a href="#home" class="brand"><span class="monogram" data-i="brandMark">AS</span><span class="brand-name" data-i="brandName">AHMAD SADEK</span></a>
+<nav class="nav" id="nav">
+<a href="#home" data-i="navHome">Home</a><a href="#about" data-i="navAbout">About</a><a href="#archive" data-i="navArchive">Archive</a><a href="#writing" data-i="navWriting">Writing</a><a href="#research" data-i="navResearch">Research</a><a href="#books" data-i="navBooks">Books</a><a href="#projects" data-i="navProjects">Projects</a>
+</nav>
+<div class="tools"><a href="#!" class="lang" data-lang="ar">العربية</a><span>/</span><a href="#!" class="lang active" data-lang="en">EN</a><button class="menu-btn" id="menuBtn" data-i="menuLabel" aria-controls="mobileMenu" aria-expanded="false">Menu</button></div>
+</header>
+
+<main>
+<section class="page active" id="home">
+<div class="hero"><div class="eyebrow" data-i="eyebrow">A PERSONAL ARCHIVE</div><div class="hero-grid"><div><h1><span data-i="firstName">Ahmad</span><br><em data-i="lastName">Sadek.</em></h1></div><div><p class="hero-lead" data-i="heroLead">A quiet collection of things I study, build, question, and write.</p><div class="hero-meta" data-i="heroMeta">Pharmacy Student · Researcher · Writer · Curious Mind</div><a class="text-link" href="#about" data-i="discover">Discover the person behind the archive <span>↗</span></a></div></div></div>
+<div class="section"><div class="split"><div class="section-label">01 — <span data-i="identity">Identity</span></div><p class="lead-text" data-i="manifesto">This is a growing record of a life shaped by learning — from pharmacy and scientific research to engineering, philosophy, writing, and the questions that remain open.</p></div></div>
+<div class="section"><div class="heading-row"><div class="section-label">02 — <span data-i="fromArchive">From the archive</span></div><a class="text-link" href="#archive" data-i="viewArchive">View complete archive <span>↗</span></a></div><div class="feature-grid"><article class="feature"><small>BEGIN</small><h3 data-i="feature1">The archive is waiting for its first published piece.</h3></article><article class="feature"><small>WRITING</small><h3 data-i="feature2">Ideas, essays, research and books will gather here.</h3></article><article class="feature"><small>WORK</small><h3 data-i="feature3">Every new project becomes part of the larger story.</h3></article></div></div>
+<div class="section"><div class="heading-row"><div class="section-label">03 — <span data-i="gardens">The gardens</span></div><p class="note" data-i="gardensNote">Different disciplines. One mind. A growing body of work.</p></div><div class="gardens">
+<a class="garden" href="#pharmacy"><span class="garden-number">01</span><div><small data-i="gardenScience">SCIENCE</small><h3 data-i="pharmacyMenu">Medicine &amp; Pharmacy</h3><p data-i="pharmacyDesc">Research, learning, scientific notes, and work from the health sciences.</p></div><span class="arrow">↗</span></a>
+<a class="garden" href="#engineering"><span class="garden-number">02</span><div><small data-i="gardenBuilding">ENGINEERING</small><h3 data-i="engineeringMenu">Engineering &amp; Technology</h3><p data-i="engineeringDesc">Projects, experiments, systems, technology, and things made from ideas.</p></div><span class="arrow">↗</span></a>
+<a class="garden" href="#thought"><span class="garden-number">03</span><div><small data-i="gardenThought">IDEAS</small><h3 data-i="thoughtMenu">Thought &amp; Philosophy</h3><p data-i="thoughtDesc">Questions, reflections, philosophy, humanities, and attempts to understand.</p></div><span class="arrow">↗</span></a>
+<a class="garden" href="#personal"><span class="garden-number">04</span><div><small data-i="gardenPersonal">PERSONAL</small><h3 data-i="personalMenu">Personal</h3><p data-i="personalDesc">Experiences, observations, lessons, memories, and the quieter parts of the journey.</p></div><span class="arrow">↗</span></a>
+</div></div>
+<div class="section"><div class="library-grid"><div><div class="section-label">04 — <span data-i="library">Library</span></div><p class="lead-text" style="margin-top:28px" data-i="libraryTitle">Research, writing, books, and projects — kept in one place.</p><p class="note" style="margin-top:26px" data-i="libraryText">The archive is designed to grow with you. Every new piece becomes part of the larger story.</p></div><div class="library-mark"><span data-i="brandMark">AS</span></div></div></div>
+<div class="section"><div class="section-label">05 — <span data-i="contact">Contact</span></div><div class="contact-grid"><h2 data-i="contactTitle">For ideas worth discussing.</h2><div><p data-i="contactText">For research, collaboration, academic work, or simply a thoughtful exchange.</p><a class="email" href="mailto:ahmadsadekalbasatneh@gmail.com">ahmadsadekalbasatneh@gmail.com</a></div></div></div>
+</section>
+
+<section class="page" id="about"><div class="page-hero"><div class="section-label" data-i="aboutLabel">ABOUT — AHMAD SADEK</div><h2 data-i="aboutTitle">The person<br>behind the archive.</h2><p class="page-intro" data-i="aboutIntro">A pharmacy student building an unusually broad body of work across science, technology, thought, and writing.</p></div><div class="section"><div class="split"><div class="section-label">01 — <span data-i="profile">Profile</span></div><p class="lead-text" data-i="aboutBody">I am Ahmad Sadek, a student of pharmacy at Lebanese International University. Beyond one discipline, I am interested in learning deeply, building meaningful things, investigating questions, and preserving the ideas that shape my thinking.</p></div></div></section>
+
+<section class="page" id="archive"><div class="page-hero"><div class="section-label" data-i="archiveLabel">ARCHIVE</div><h2 data-i="archiveTitle">Everything,<br>in one place.</h2><p class="page-intro" data-i="archiveIntro">A searchable record of writing, research, books, projects, ideas, and personal work.</p></div><div class="section"><div class="archive-tools"><input class="search" id="search" data-placeholder placeholder="Search the archive…"><div class="filters"><button class="filter active" data-filter="all" data-i="all">All</button><button class="filter" data-filter="writing" data-i="writingFilter">Writing</button><button class="filter" data-filter="research" data-i="researchFilter">Research</button><button class="filter" data-filter="book" data-i="booksFilter">Books</button><button class="filter" data-filter="project" data-i="projectsFilter">Projects</button></div></div><div class="entry-list" id="archiveList"><div class="placeholder-note" data-i="archiveEmpty">Your published pieces will appear here as the archive grows.</div></div></div></section>
+
+<section class="page" id="writing"><div class="page-hero"><div class="section-label" data-i="writingLabel">WRITING</div><h2 data-i="writingTitle">Thoughts,<br>in words.</h2><p class="page-intro" data-i="writingIntro">Essays, articles, observations, and things worth putting into language.</p></div><div class="section"><div class="entry-list"><div class="placeholder-note" data-i="writingEmpty">Your essays and articles will live here.</div></div></div></section>
+
+<section class="page" id="research"><div class="page-hero"><div class="section-label" data-i="researchLabel">RESEARCH</div><h2 data-i="researchTitle">Questions,<br>investigated.</h2><p class="page-intro" data-i="researchIntro">Research, scientific work, papers, reviews, and academic inquiry.</p></div><div class="section"><div class="entry-list"><div class="placeholder-note" data-i="researchEmpty">Full papers, abstracts, references and PDFs can be added to the archive.</div></div></div></section>
+
+<section class="page" id="books"><div class="page-hero"><div class="section-label" data-i="booksLabel">BOOKS</div><h2 data-i="booksTitle">Ideas,<br>bound together.</h2><p class="page-intro" data-i="booksIntro">Books and long-form works, prepared to be read directly inside the site.</p></div><div class="section"><div class="feature-grid"><article class="feature"><small>BOOK I</small><h3 data-i="book1">Your first volume will have its place here.</h3></article><article class="feature"><small>READ ONLINE</small><h3 data-i="book2">A future reader for your books.</h3></article><article class="feature"><small>ARCHIVE</small><h3 data-i="book3">Cover, chapters, PDF and metadata.</h3></article></div></div></section>
+
+<section class="page" id="projects"><div class="page-hero"><div class="section-label" data-i="projectsLabel">PROJECTS</div><h2 data-i="projectsTitle">Ideas,<br>made real.</h2><p class="page-intro" data-i="projectsIntro">Engineering, academic, technical, and experimental work.</p></div><div class="section"><div class="entry-list"><div class="placeholder-note" data-i="projectsEmpty">Your projects will be listed here.</div></div></div></section>
+
+<section class="page" id="pharmacy"><div class="page-hero"><div class="section-label" data-i="pharmacyLabel">MEDICINE &amp; PHARMACY</div><h2 data-i="pharmacyTitle">Science,<br>carefully explored.</h2><p class="page-intro" data-i="pharmacyPageIntro">Research, learning, scientific notes, reviews, and academic work from the health sciences.</p></div><div class="section"><div class="placeholder-note" data-i="sectionEmpty">This garden is ready for its first publication.</div></div></section>
+
+<section class="page" id="engineering"><div class="page-hero"><div class="section-label" data-i="engineeringLabel">ENGINEERING &amp; TECHNOLOGY</div><h2 data-i="engineeringTitle">Things,<br>made from ideas.</h2><p class="page-intro" data-i="engineeringPageIntro">Projects, experiments, systems, technology, and work that turns concepts into reality.</p></div><div class="section"><div class="placeholder-note" data-i="sectionEmpty2">This garden is ready for its first publication.</div></div></section>
+
+<section class="page" id="thought"><div class="page-hero"><div class="section-label" data-i="thoughtLabel">THOUGHT &amp; PHILOSOPHY</div><h2 data-i="thoughtTitle">Questions,<br>kept open.</h2><p class="page-intro" data-i="thoughtPageIntro">Philosophy, humanities, reflections, ideas, and attempts to understand the world and the self.</p></div><div class="section"><div class="placeholder-note" data-i="sectionEmpty3">This garden is ready for its first publication.</div></div></section>
+
+<section class="page" id="personal"><div class="page-hero"><div class="section-label" data-i="personalLabel">PERSONAL</div><h2 data-i="personalTitle">The quieter<br>side of the journey.</h2><p class="page-intro" data-i="personalPageIntro">Experiences, observations, lessons, memories, and the human side of Ahmad's archive.</p></div><div class="section"><div class="placeholder-note" data-i="sectionEmpty4">This garden is ready for its first publication.</div></div></section>
+<section class="page" id="entry"><div id="dynamicArticle"></div></section>
+</main>
+<footer><span>© <span id="year"></span> Ahmad Sadek</span><span data-i="footer">AHMAD SADEK — PERSONAL ARCHIVE</span></footer>
+</div>
+<div id="mobileMenu" hidden style="position:fixed;top:72px;left:0;right:0;z-index:19;background:var(--ivory);border-bottom:1px solid var(--line);padding:24px;gap:13px"></div>
+
+<script>
+const I18N={
+en:{
+navHome:"Home",navAbout:"About",navArchive:"Archive",navWriting:"Writing",navResearch:"Research",navBooks:"Books",navProjects:"Projects",menuLabel:"Menu",loadError:"The archive could not be loaded. Try again later.",brandMark:"AS",brandName:"AHMAD SADEK",
+eyebrow:"A PERSONAL ARCHIVE",firstName:"Ahmad",lastName:"Sadek.",heroLead:"A quiet collection of things I study, build, question, and write.",heroMeta:"Pharmacy Student · Researcher · Writer · Curious Mind",discover:"Discover the person behind the archive",identity:"Identity",
+manifesto:"This is a growing record of a life shaped by learning — from pharmacy and scientific research to engineering, philosophy, writing, and the questions that remain open.",fromArchive:"From the archive",viewArchive:"View complete archive",
+feature1:"The archive is waiting for its first published piece.",feature2:"Ideas, essays, research and books will gather here.",feature3:"Every new project becomes part of the larger story.",
+gardens:"FIELDS OF INTEREST",gardensNote:"Different disciplines. One mind. A growing body of work.",gardenScience:"SCIENCE",gardenBuilding:"ENGINEERING",gardenThought:"IDEAS",gardenPersonal:"PERSONAL",pharmacyMenu:"Medicine & Pharmacy",engineeringMenu:"Engineering & Technology",thoughtMenu:"Thought & Philosophy",personalMenu:"Personal",pharmacyDesc:"Research, learning, scientific notes, and work from the health sciences.",engineeringDesc:"Projects, experiments, systems, technology, and things made from ideas.",thoughtDesc:"Questions, reflections, philosophy, humanities, and attempts to understand.",personalDesc:"Experiences, observations, lessons, memories, and the quieter parts of the journey.",
+library:"Library",libraryTitle:"Research, writing, books, and projects — kept in one place.",libraryText:"The archive is designed to grow with you. Every new piece becomes part of the larger story.",contact:"Contact",contactTitle:"For ideas worth discussing.",contactText:"For research, collaboration, academic work, or simply a thoughtful exchange.",
+aboutLabel:"ABOUT — AHMAD SADEK",aboutTitle:"The person<br>behind the archive.",aboutIntro:"A pharmacy student building an unusually broad body of work across science, technology, thought, and writing.",profile:"Profile",aboutBody:"I am Ahmad Sadek, a student of pharmacy at Lebanese International University. Beyond one discipline, I am interested in learning deeply, building meaningful things, investigating questions, and preserving the ideas that shape my thinking.",
+archiveLabel:"ARCHIVE",archiveTitle:"Everything,<br>in one place.",archiveIntro:"A searchable record of writing, research, books, projects, ideas, and personal work.",archiveEmpty:"Your published pieces will appear here as the archive grows.",empty:"Nothing published here yet.",search:"Search the archive…",all:"All",writingFilter:"Writing",researchFilter:"Research",booksFilter:"Books",projectsFilter:"Projects",ideasFilter:"Ideas",personalFilter:"Personal",
+writingLabel:"WRITING",writingTitle:"Thoughts,<br>in words.",writingIntro:"Essays, articles, observations, and things worth putting into language.",writingEmpty:"Your essays and articles will live here.",
+researchLabel:"RESEARCH",researchTitle:"Questions,<br>investigated.",researchIntro:"Research, scientific work, papers, reviews, and academic inquiry.",researchEmpty:"Full papers, abstracts, references and PDFs can be added to the archive.",
+booksLabel:"BOOKS",booksTitle:"Ideas,<br>bound together.",booksIntro:"Books and long-form works, prepared to be read directly inside the site.",book1:"Your first volume will have its place here.",book2:"A future reader for your books.",book3:"Cover, chapters, PDF and metadata.",
+projectsLabel:"PROJECTS",projectsTitle:"Ideas,<br>made real.",projectsIntro:"Engineering, academic, technical, and experimental work.",projectsEmpty:"Your projects will be listed here.",
+pharmacyLabel:"MEDICINE & PHARMACY",pharmacyTitle:"Science,<br>carefully explored.",pharmacyPageIntro:"Research, learning, scientific notes, reviews, and academic work from the health sciences.",
+engineeringLabel:"ENGINEERING & TECHNOLOGY",engineeringTitle:"Things,<br>made from ideas.",engineeringPageIntro:"Projects, experiments, systems, technology, and work that turns concepts into reality.",
+thoughtLabel:"THOUGHT & PHILOSOPHY",thoughtTitle:"Questions,<br>kept open.",thoughtPageIntro:"Philosophy, humanities, reflections, ideas, and attempts to understand the world and the self.",
+personalLabel:"PERSONAL",personalTitle:"The quieter<br>side of the journey.",personalPageIntro:"Experiences, observations, lessons, memories, and the human side of Ahmad's archive.",
+sectionEmpty:"This garden is ready for its first publication.",sectionEmpty2:"This garden is ready for its first publication.",sectionEmpty3:"This garden is ready for its first publication.",sectionEmpty4:"This garden is ready for its first publication.",footer:"AHMAD SADEK — PERSONAL ARCHIVE"
+},
+ar:{
+navHome:"الرئيسية",navAbout:"عن أحمد",navArchive:"الأرشيف",navWriting:"الكتابات",navResearch:"الأبحاث",navBooks:"الكتب",navProjects:"المشاريع",menuLabel:"القائمة",loadError:"تعذر تحميل الأرشيف. حاول مرة أخرى لاحقًا.",brandMark:"أص",brandName:"أحمد صادق",
+eyebrow:"أرشيف أحمد صادق الشخصي",firstName:"أحمد",lastName:"صادق.",heroLead:"مساحة هادئة لما أدرسه، وأبنيه، وأتساءل عنه، وأكتبه.",heroMeta:"طالب صيدلة · باحث · كاتب · عقل فضولي",discover:"اكتشف الشخص خلف الأرشيف",identity:"الهوية",
+manifesto:"هذا سجل متنامٍ لحياة تشكلها المعرفة؛ من الصيدلة والبحث العلمي إلى الهندسة والفلسفة والكتابة، والأسئلة التي لا تزال مفتوحة.",fromArchive:"من الأرشيف",viewArchive:"تصفح الأرشيف الكامل",
+feature1:"الأرشيف ينتظر أول قطعة منشورة فيه.",feature2:"هنا ستتجمع الأفكار والمقالات والأبحاث والكتب.",feature3:"كل مشروع جديد يصبح جزءًا من القصة الأكبر.",
+gardens:"مجالات الاهتمام",gardensNote:"مجالات مختلفة. عقل واحد. وأعمال تتسع مع الوقت.",gardenScience:"علوم",gardenBuilding:"هندسة",gardenThought:"فكر",gardenPersonal:"شخصي",pharmacyMenu:"الطب والصيدلة",engineeringMenu:"الهندسة والتقنية",thoughtMenu:"الفكر والفلسفة",personalMenu:"شخصي",pharmacyDesc:"أبحاث وتعلّم وملاحظات علمية وأعمال من العلوم الصحية.",engineeringDesc:"مشاريع وتجارب وأنظمة وتقنيات وأفكار تحولت إلى أشياء ملموسة.",thoughtDesc:"أسئلة وتأملات وفلسفة وعلوم إنسانية ومحاولات للفهم.",personalDesc:"تجارب وملاحظات ودروس وذكريات والجانب الهادئ من الرحلة.",
+library:"المكتبة",libraryTitle:"أبحاث وكتابات وكتب ومشاريع — محفوظة في مكان واحد.",libraryText:"صُمم الأرشيف لينمو معك؛ فكل إضافة جديدة تصبح جزءًا من القصة الأكبر.",contact:"تواصل",contactTitle:"للأفكار التي تستحق النقاش.",contactText:"للبحث والتعاون والعمل الأكاديمي، أو لمجرد حوار هادئ وهادف.",
+aboutLabel:"عن أحمد صادق",aboutTitle:"الشخص<br>خلف الأرشيف.",aboutIntro:"طالب صيدلة يبني عالمًا واسعًا من العمل بين العلوم والتقنية والفكر والكتابة.",profile:"نبذة",aboutBody:"أنا أحمد صادق، طالب صيدلة في الجامعة اللبنانية الدولية. لا أحصر فضولي في تخصص واحد؛ أهتم بالتعلّم العميق، وبناء الأشياء ذات المعنى، والبحث في الأسئلة، وحفظ الأفكار التي تشكل طريقة تفكيري.",
+archiveLabel:"الأرشيف",archiveTitle:"كل شيء،<br>في مكان واحد.",archiveIntro:"سجل قابل للبحث يضم الكتابات والأبحاث والكتب والمشاريع والأفكار والعمل الشخصي.",archiveEmpty:"ستظهر أعمالك المنشورة هنا مع نمو الأرشيف.",empty:"لا توجد مواد منشورة هنا بعد.",search:"ابحث في الأرشيف…",all:"الكل",writingFilter:"الكتابات",researchFilter:"الأبحاث",booksFilter:"الكتب",projectsFilter:"المشاريع",ideasFilter:"الأفكار",personalFilter:"شخصي",
+writingLabel:"الكتابات",writingTitle:"أفكار،<br>في كلمات.",writingIntro:"مقالات ونصوص وتأملات وأشياء تستحق أن توضع في اللغة.",writingEmpty:"ستجد مقالاتك ونصوصك هنا.",
+researchLabel:"الأبحاث",researchTitle:"أسئلة،<br>تحت البحث.",researchIntro:"أبحاث ودراسات وأوراق ومراجعات واستقصاءات أكاديمية.",researchEmpty:"يمكنك إضافة الأبحاث الكاملة والملخصات والمراجع وملفات PDF إلى الأرشيف.",
+booksLabel:"الكتب",booksTitle:"أفكار،<br>مجتمعة في كتب.",booksIntro:"كتب وأعمال طويلة مجهزة لتُقرأ مباشرة داخل الموقع.",book1:"سيكون لكتابك الأول مكانه هنا.",book2:"قارئ داخلي لكتبك في المستقبل.",book3:"غلاف وفصول وPDF وبيانات الكتاب.",
+projectsLabel:"المشاريع",projectsTitle:"أفكار،<br>تتحول إلى واقع.",projectsIntro:"أعمال هندسية وأكاديمية وتقنية وتجريبية.",projectsEmpty:"ستظهر مشاريعك هنا.",
+pharmacyLabel:"الطب والصيدلة",pharmacyTitle:"علم،<br>بهدوء وعمق.",pharmacyPageIntro:"أبحاث وتعلّم وملاحظات علمية ومراجعات وأعمال أكاديمية من العلوم الصحية.",
+engineeringLabel:"الهندسة والتقنية",engineeringTitle:"أشياء،<br>تبدأ من فكرة.",engineeringPageIntro:"مشاريع وتجارب وأنظمة وتقنيات وأعمال تحوّل المفاهيم إلى واقع.",
+thoughtLabel:"الفكر والفلسفة",thoughtTitle:"أسئلة،<br>تبقى مفتوحة.",thoughtPageIntro:"فلسفة وعلوم إنسانية وتأملات وأفكار ومحاولات لفهم العالم والذات.",
+personalLabel:"المساحة الشخصية",personalTitle:"الجانب الأهدأ<br>من الرحلة.",personalPageIntro:"تجارب وملاحظات ودروس وذكريات والجانب الإنساني من أرشيف أحمد.",
+sectionEmpty:"هذا البستان جاهز لأول منشور فيه.",sectionEmpty2:"هذا البستان جاهز لأول منشور فيه.",sectionEmpty3:"هذا البستان جاهز لأول منشور فيه.",sectionEmpty4:"هذا البستان جاهز لأول منشور فيه.",footer:"أحمد صادق — الأرشيف الشخصي"
+}};
+function applyLang(lang){
+ const t=I18N[lang]||I18N.en;
+ document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+ document.querySelectorAll("[data-i]").forEach(el=>{if(t[el.dataset.i]!==undefined)el.innerHTML=t[el.dataset.i]});
+ document.querySelectorAll("[data-lang]").forEach(el=>el.classList.toggle("active",el.dataset.lang===lang));
+ document.querySelectorAll(".filter").forEach(button=>button.setAttribute("aria-pressed",String(button.classList.contains("active"))));
+ document.querySelectorAll("[data-placeholder]").forEach(el=>{el.placeholder=t.search;el.setAttribute("aria-label",t.search)});
+ const menuLabels={home:"navHome",about:"navAbout",archive:"navArchive",writing:"navWriting",research:"navResearch",books:"navBooks",projects:"navProjects",pharmacy:"pharmacyMenu",engineering:"engineeringMenu",thought:"thoughtMenu",personal:"personalMenu",contact:"contact"};
+ document.querySelectorAll("#mobileMenu a").forEach(link=>{const key=menuLabels[link.hash.slice(1)];if(key&&t[key])link.textContent=t[key]});
+ const filters=document.querySelector(".filters");
+ [["idea","ideasFilter"],["personal","personalFilter"]].forEach(([type,key])=>{
+  if(filters&&!filters.querySelector(`[data-filter="${type}"]`)){const button=document.createElement("button");button.className="filter";button.dataset.filter=type;button.dataset.i=key;button.setAttribute("aria-pressed","false");button.textContent=t[key];filters.appendChild(button)}
+ });
+ localStorage.setItem("ahmad-lang",lang);
+}
+document.querySelectorAll("[data-lang]").forEach(el=>el.addEventListener("click",e=>{e.preventDefault();applyLang(el.dataset.lang)}));
+document.getElementById("year").textContent=new Date().getFullYear();
+const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const revealObserver="IntersectionObserver" in window&&!prefersReducedMotion?new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.dataset.motion="visible";revealObserver.unobserve(entry.target)}}),{threshold:.12,rootMargin:"0px 0px -28px 0px"}):null;
+function observeMotion(root=document){
+ if(!root?.querySelectorAll)return;
+ root.querySelectorAll(".section,.page-hero,.article-page,.entry").forEach((element,index)=>{
+  if(element.dataset.motionReady)return;
+  element.dataset.motionReady="true";element.style.setProperty("--motion-order",Math.min(index,8));
+  if(prefersReducedMotion||!revealObserver){element.dataset.motion="visible";return;}
+  element.dataset.motion="pending";revealObserver.observe(element);
+ });
+}
+
+const menu=document.getElementById("menuBtn");
+document.getElementById("mobileMenu").addEventListener("click",event=>{if(event.target.closest("a")){const box=document.getElementById("mobileMenu");box.hidden=true;box.style.display="none";menu.setAttribute("aria-expanded","false")}});
+menu.addEventListener("click",()=>{
+ const box=document.getElementById("mobileMenu");
+ if(!box.innerHTML){
+  const lang=document.documentElement.lang==="ar"?"ar":"en",items=[ ["home","navHome"],["about","navAbout"],["archive","navArchive"],["writing","navWriting"],["research","navResearch"],["books","navBooks"],["projects","navProjects"],["pharmacy","pharmacyMenu"],["engineering","engineeringMenu"],["thought","thoughtMenu"],["personal","personalMenu"],["contact","contact"] ];
+  items.forEach(([id,key])=>{
+    const a=document.createElement("a");a.href="#"+id;a.textContent=I18N[lang][key];a.style.cssText="font:400 29px var(--serif);padding:3px 0";box.appendChild(a)
+  });
+ }
+ box.hidden=!box.hidden;box.style.display=box.hidden?"none":"grid";menu.setAttribute("aria-expanded",String(!box.hidden))
+});
+
+const search=document.getElementById("search");
+search.addEventListener("input",()=>window.renderDynamicLists?.());
+document.querySelector(".filters").addEventListener("click",event=>{
+ const btn=event.target.closest(".filter");if(!btn)return;
+ document.querySelectorAll(".filter").forEach(b=>{b.classList.remove("active");b.setAttribute("aria-pressed","false")});btn.classList.add("active");btn.setAttribute("aria-pressed","true");
+ window.renderDynamicLists?.();
+});
+
+applyLang(localStorage.getItem("ahmad-lang")||"en");
+</script>
+<script id="dynamic-content">
+const API_URL="https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io/issues?state=open&per_page=100&sort=updated&direction=desc";
+let archiveItems=[];
+
+function escapeHTML(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML}
+function escapeAttr(v){return escapeHTML(v).replace(/"/g,"&quot;")}
+function getLabels(issue){return (issue.labels||[]).map(x=>typeof x==="string"?x:x.name).filter(Boolean).map(x=>x.toLowerCase().trim())}
+function norm(v){return (v||"").toString().replace(/\r/g,"").trim().toLowerCase().replace(/\s+/g," ")}
+
+// GitHub Issue Forms submit answers as Markdown sections such as:
+// ### Content Type\nArticle / مقال\n\n### Category\nMedicine & Pharmacy / الطب والصيدلة
+// This parser reads those form sections while still supporting the older Title: value format.
+const FORM_FIELDS=["Content Type","Category","Language","Title","Subtitle","Author","Date","Tags","Reading Time","Cover Image","Abstract / Summary","Content","References","PDF / Files","Publishing"];
+function formFields(body){
+  const lines=(body||"").replace(/\r/g,"").split("\n");
+  const fields={}; let current=null;
+  for(const line of lines){
+    const m=line.match(/^###\s+(.+?)\s*$/);
+    if(m && FORM_FIELDS.some(x=>norm(x)===norm(m[1]))){
+      current=FORM_FIELDS.find(x=>norm(x)===norm(m[1]));
+      if(fields[current]===undefined)fields[current]=[];
+      continue;
+    }
+    if(current)fields[current].push(line);
+  }
+  const out={};
+  for(const [k,v] of Object.entries(fields))out[k]=v.join("\n").trim();
+  return out;
+}
+function legacyField(body,name){if(!body)return "";const m=body.match(new RegExp("^\\s*"+name.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\$&")+"\\s*:\\s*(.+)$","im"));return m?m[1].trim():""}
+function field(body,name){const value=formFields(body)[name]||legacyField(body,name)||"";return /^_?no response_?$/i.test(value.trim())?"":value}
+function isArchiveIssue(issue){return !!(field(issue.body,"Content Type")||field(issue.body,"Content"))}
+function isPublished(issue){const status=field(issue.body,"Publishing");return (/-\s*\[x\]/i.test(status)&&/public|publish/i.test(status))||getLabels(issue).includes("published")}
+
+function getType(issue){
+  const raw=norm(field(issue.body,"Content Type"));
+  const labels=getLabels(issue);
+  const map={
+    "article / مقال":"writing","article":"writing","مقال":"writing","writing":"writing",
+    "research / بحث":"research","research":"research","بحث":"research",
+    "book / كتاب":"book","book":"book","كتاب":"book",
+    "project / مشروع":"project","project":"project","مشروع":"project",
+    "idea / فكرة":"idea","idea":"idea","فكرة":"idea",
+    "personal / شخصي":"personal","personal":"personal","شخصي":"personal"
+  };
+  if(map[raw])return map[raw];
+  for(const x of ["writing","research","book","project","idea","personal"])if(labels.includes(x))return x;
+  return "other";
+}
+function getCategory(issue){
+  const raw=norm(field(issue.body,"Category"));
+  const map={
+    "medicine & pharmacy / الطب والصيدلة":"pharmacy","medicine & pharmacy":"pharmacy","pharmacy":"pharmacy","medicine":"pharmacy","الطب والصيدلة":"pharmacy",
+    "engineering & technology / الهندسة والتقنية":"engineering","engineering & technology":"engineering","engineering":"engineering","technology":"engineering","الهندسة والتقنية":"engineering",
+    "thought & philosophy / الفكر والفلسفة":"thought","thought & philosophy":"thought","thought":"thought","philosophy":"thought","humanities":"thought","الفكر والفلسفة":"thought",
+    "personal / المساحة الشخصية":"personal","personal":"personal","المساحة الشخصية":"personal",
+    "academic / أكاديمي":"academic","academic":"academic","أكاديمي":"academic",
+    "general / عام":"general","general":"general","عام":"general"
+  };
+  if(map[raw])return map[raw];
+  const labels=getLabels(issue);
+  if(labels.includes("pharmacy")||labels.includes("medicine"))return "pharmacy";
+  if(labels.includes("engineering")||labels.includes("technology"))return "engineering";
+  if(labels.includes("thought")||labels.includes("philosophy")||labels.includes("humanities"))return "thought";
+  if(labels.includes("personal"))return "personal";
+  return "";
+}
+function title(issue){return field(issue.body,"Title")||issue.title.replace(/^\[New Content\]\s*/i,"")}
+function subtitle(issue){return field(issue.body,"Subtitle")||field(issue.body,"Abstract / Summary")||clean(field(issue.body,"Content")||issue.body).slice(0,180)}
+function cover(issue){
+  const raw=field(issue.body,"Cover Image").trim();
+  if(!raw)return "";
+  const htmlImage=raw.match(/<img\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/i),markdownImage=raw.match(/!\[[^\]]*\]\(([^)]+)\)/);
+  const candidate=htmlImage?htmlImage[2]:markdownImage?markdownImage[1]:raw.match(/https?:\/\/[^\s)]+/)?.[0];
+  if(!candidate)return "";
+  try{const url=new URL(candidate);return url.protocol==="https:"||url.protocol==="http:"?url.href:""}catch{return ""}
+}
+function clean(body){return (body||"").replace(/^---[\s\S]*?---/m,"").replace(/^(Title|Subtitle|Category|Date|Author|Authors|Cover Image|Tags|Language|Reading Time|References)\s*:\s*.*$/gmi,"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^#+\s+/gm,"").replace(/[*_`>~-]/g,"").replace(/\s+/g," ").trim()}
+function contentText(issue){return field(issue.body,"Content")||issue.body||""}
+function markdown(text){
+  let s=escapeHTML(text||"");
+  s=s.replace(/^###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^##\s+(.+)$/gm,"<h3>$1</h3>").replace(/^#\s+(.+)$/gm,"<h2>$1</h2>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>");
+  return s.split(/\n{2,}/).map(x=>x.trim()?`<p>${x.replace(/\n/g,"<br>")}</p>`:"").join("");
+}
+function typeLabel(type,lang){
+  const ar={writing:"كتابة",research:"بحث",book:"كتاب",project:"مشروع",idea:"فكرة",personal:"شخصي",other:"مادة"};
+  const en={writing:"Writing",research:"Research",book:"Book",project:"Project",idea:"Idea",personal:"Personal",other:"Entry"};
+  return (lang==="ar"?ar:en)[type]||type;
+}
+function categoryLabel(cat,lang){
+  const ar={pharmacy:"الطب والصيدلة",engineering:"الهندسة والتقنية",thought:"الفكر والفلسفة",personal:"المساحة الشخصية",academic:"أكاديمي",general:"عام"};
+  const en={pharmacy:"Medicine & Pharmacy",engineering:"Engineering & Technology",thought:"Thought & Philosophy",personal:"Personal",academic:"Academic",general:"General"};
+  return (lang==="ar"?ar:en)[cat]||"";
+}
+function entryEl(issue){
+  const a=document.createElement("a");
+  const type=getType(issue),lang=localStorage.getItem("ahmad-lang")||"en",cat=getCategory(issue);
+  a.className="entry";a.href="#entry/"+issue.number;a.dataset.type=type;
+  a.dataset.q=(title(issue)+" "+subtitle(issue)+" "+getLabels(issue).join(" ")+" "+categoryLabel(cat,lang)).toLowerCase();
+  a.innerHTML=`<div class="entry-type">${escapeHTML(typeLabel(type,lang))}</div><div><h3>${escapeHTML(title(issue))}</h3><p>${escapeHTML(subtitle(issue))}</p></div><div class="entry-year">${new Date(issue.created_at).getFullYear()}<br><span style="color:var(--accent)">↗</span></div>`;
+  return a;
+}
+function fillList(el,items){
+  if(!el)return;
+  el.innerHTML="";
+  if(!items.length){el.innerHTML=`<div class="empty">${I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet."}</div>`;return;}
+  items.forEach((x,index)=>{const entry=entryEl(x);entry.classList.add("motion-row");entry.style.setProperty("--motion-order",Math.min(index,8));el.appendChild(entry)});
+}
+function filtered(){
+  const q=(document.getElementById("search")?.value||"").toLowerCase().trim();
+  const active=document.querySelector(".filter.active")?.dataset.filter||"all";
+  return archiveItems.filter(x=>{
+    const searchable=[title(x),subtitle(x),contentText(x),getLabels(x).join(" "),field(x.body,"Category")].join(" ").toLowerCase();
+    return (active==="all"||getType(x)===active)&&(!q||searchable.includes(q));
+  });
+}
+function renderDynamicLists(){
+  fillList(document.getElementById("archiveList"),filtered());
+  const maps={writing:"writing",research:"research",projects:"projects",pharmacy:"pharmacy",engineering:"engineering",thought:"thought",personal:"personal",books:"books"};
+  for(const [id,type] of Object.entries(maps)){
+    const sec=document.getElementById(id);if(!sec)continue;
+    let box=sec.querySelector(".entry-list");
+    if(!box){
+      box=document.createElement("div");box.className="entry-list";
+      const s=sec.querySelector(".section");if(s){s.innerHTML="";s.appendChild(box);}else sec.appendChild(box);
+    }
+    let items=archiveItems.filter(x=>type==="books"?getType(x)==="book":type==="projects"?getType(x)==="project":getCategory(x)===type||getType(x)===type);
+    fillList(box,items);
+  }
+  observeMotion(document.querySelector(".page.active")||document);
+}
+function renderFeatured(){
+  const box=document.querySelector("#home .feature-grid");if(!box)return;
+  const top=archiveItems.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);box.innerHTML="";
+  const lang=localStorage.getItem("ahmad-lang")||"en";
+  if(!top.length){for(let i=1;i<=3;i++){const f=document.createElement("article");f.className="feature";f.innerHTML=`<small>ARCHIVE</small><h3>${escapeHTML(I18N[lang].empty||"Nothing published here yet.")}</h3>`;box.appendChild(f)}return;}
+  top.forEach(x=>{const f=document.createElement("a");f.className="feature";f.href="#entry/"+x.number;f.innerHTML=`<small>${escapeHTML(typeLabel(getType(x),lang))}</small><h3>${escapeHTML(title(x))}</h3>`;box.appendChild(f)});
+}
+function renderArticle(num){
+  const issue=archiveItems.find(x=>String(x.number)===String(num)),host=document.getElementById("dynamicArticle");if(!host)return;
+  if(!issue){host.innerHTML=`<div class="section"><div class="empty">${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</div></div>`;return;}
+  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=contentText(issue),abstract=field(issue.body,"Abstract / Summary"),refs=field(issue.body,"References");
+  const meta=[field(issue.body,"Date")||new Date(issue.created_at).toISOString().slice(0,10),typeLabel(type,lang),categoryLabel(cat,lang)].filter(Boolean).join(" · ");
+  host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(typeLabel(type,lang))}</div><h2>${escapeHTML(title(issue))}</h2>${field(issue.body,"Subtitle")?`<div class="article-subtitle">${escapeHTML(field(issue.body,"Subtitle"))}</div>`:""}<div class="article-meta">${escapeHTML(meta)}</div>${cv?`<img class="cover" src="${escapeAttr(cv)}" alt="">`:""}${abstract?`<div class="prose"><h3>${lang==="ar"?"الملخص":"Abstract"}</h3>${markdown(abstract)}</div>`:""}<div class="prose">${markdown(body)}</div>${refs?`<div class="prose"><h3>${lang==="ar"?"المراجع":"References"}</h3>${markdown(refs)}</div>`:""}<p style="margin-top:50px"><a class="text-link" href="${escapeAttr(issue.html_url)}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`;
+  observeMotion(host);
+}
+function renderRoute(){
+  const hash=location.hash.slice(1)||"home",entryMatch=hash.match(/^entry\/(\d+)$/),pageId=hash==="contact"?"home":hash;
+  const navTarget=entryMatch?"archive":pageId;
+  document.querySelectorAll("#nav a").forEach(link=>{if(link.hash==="#"+navTarget)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const mobileMenu=document.getElementById("mobileMenu");if(mobileMenu){mobileMenu.hidden=true;mobileMenu.style.display="none";document.getElementById("menuBtn").setAttribute("aria-expanded","false")}
+  if(entryMatch){const entryPage=document.getElementById("entry");entryPage.classList.add("active");renderArticle(entryMatch[1]);observeMotion(entryPage);window.scrollTo({top:0,behavior:"instant"});return;}
+  const p=document.getElementById(pageId)?.classList.contains("page")?document.getElementById(pageId):document.getElementById("home");p.classList.add("active");observeMotion(p);
+  if(hash==="archive")renderDynamicLists();
+  const contact=document.querySelector("#home .contact-grid");
+  if(hash==="contact"&&contact)contact.scrollIntoView({behavior:"smooth"});else window.scrollTo({top:0,behavior:"instant"});
+}
+async function loadArchive(){
+  try{
+    const issues=[];
+    for(let page=1;;page++){
+      const url=new URL(API_URL);url.searchParams.set("page",String(page));
+      const r=await fetch(url,{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw Error();
+      const batch=await r.json();issues.push(...batch);if(batch.length<100)break;
+    }
+    archiveItems=issues.filter(x=>!x.pull_request&&isArchiveIssue(x)&&isPublished(x));
+    renderFeatured();renderDynamicLists();
+    if(location.hash.startsWith("#entry/"))renderArticle(decodeURIComponent(location.hash.split("/")[1]||""));
+  }catch(e){
+    renderFeatured();
+    const list=document.getElementById("archiveList");
+    if(list){const message=document.createElement("div");message.className="content-error";message.textContent=I18N[document.documentElement.lang].loadError;list.replaceChildren(message);}
+  }
+}
+window.addEventListener("hashchange",renderRoute);
+document.querySelectorAll(".lang").forEach(el=>el.addEventListener("click",()=>setTimeout(()=>{renderDynamicLists();renderFeatured();if(location.hash.startsWith("#entry/"))renderArticle(decodeURIComponent(location.hash.split("/")[1]||""));},0)));
+renderRoute();
+loadArchive();
+</script>
+</body></html>
