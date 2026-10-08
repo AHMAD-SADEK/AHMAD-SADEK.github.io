@@ -1,0 +1,28 @@
+name: Build Ahmad's Archive
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export published content
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python tools/export_issues.py
+      - name: Commit content data
+        run: |
+          git config user.name "Ahmad Sadek Archive Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/content.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update published archive content"
+          git push
