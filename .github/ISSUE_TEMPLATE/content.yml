@@ -120,7 +120,7 @@ body:
       label: Content
       description: المحتوى الرئيسي للمادة. يمكنك استخدام Markdown وإضافة الصور والروابط.
       placeholder: ابدأ الكتابة هنا...
-      render: markdown
+
     validations:
       required: true
 
@@ -132,7 +132,7 @@ body:
       placeholder: |
         1. Author, A. (2026). Title...
         2. Journal / Book / Website...
-      render: markdown
+
 
   - type: textarea
     id: pdf
