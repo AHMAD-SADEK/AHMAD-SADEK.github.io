@@ -407,7 +407,8 @@ function fileAttachments(issue){
   if(!unique.length)return "";
   return unique.map(x=>{
     const name=escapeHTML(x.name),url=escapeAttr(x.url),isPdf=/\.pdf(?:$|[?#])/i.test(x.url)||/\.pdf$/i.test(x.name);
-    return `<div style="margin:18px 0"><p><a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${name} — ${document.documentElement.lang==="ar"?"فتح / تنزيل الملف":"Open / download file"} ↗</a></p>${isPdf?`<iframe title="${name}" src="${url}" loading="lazy" style="width:100%;height:78vh;min-height:520px;border:1px solid var(--line);background:white;border-radius:3px" allow="fullscreen"></iframe>`:""}</div>`;
+    const previewUrl="https://docs.google.com/gview?embedded=1&url="+encodeURIComponent(x.url);
+    return `<div style="margin:18px 0"><p><a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${name} — ${document.documentElement.lang==="ar"?"فتح / تنزيل الملف":"Open / download file"} ↗</a></p>${isPdf?`<iframe title="${name}" src="${escapeAttr(previewUrl)}" loading="lazy" style="width:100%;height:78vh;min-height:520px;border:1px solid var(--line);background:white;border-radius:3px" allow="fullscreen"></iframe><p style="color:var(--muted);font-size:13px">${document.documentElement.lang==="ar"?"إذا لم تظهر المعاينة، استخدم رابط فتح / تنزيل الملف أعلاه.":"If the preview does not load, use the open / download link above."}</p>`:""}</div>`;
   }).join("");
 }
 function markdown(text){
