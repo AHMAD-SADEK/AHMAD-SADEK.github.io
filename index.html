@@ -314,7 +314,7 @@ document.querySelector(".filters").addEventListener("click",event=>{
 applyLang(localStorage.getItem("ahmad-lang")||"en");
 </script>
 <script id="dynamic-content">
-const API_URL="https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io/issues?state=open&per_page=100&sort=updated&direction=desc";
+const API_URL="https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io/issues?state=all&per_page=100&sort=updated&direction=desc";
 let archiveItems=[];
 
 function escapeHTML(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML}
@@ -325,7 +325,7 @@ function norm(v){return (v||"").toString().replace(/\r/g,"").trim().toLowerCase(
 // GitHub Issue Forms submit answers as Markdown sections such as:
 // ### Content Type\nArticle / مقال\n\n### Category\nMedicine & Pharmacy / الطب والصيدلة
 // This parser reads those form sections while still supporting the older Title: value format.
-const FORM_FIELDS=["Content Type","Category","Language","Title","Subtitle","Author","Date","Tags","Reading Time","Cover Image","Abstract / Summary","Content","References","PDF / Files","Publishing"];
+const FORM_FIELDS=["Content Type","Category","Language","Publication Status","Title","Subtitle","Author","Authors","Date","Tags","Reading Time","Keywords","Cover Image","Abstract / Summary","Description / Summary","Summary","Introduction","Methodology","Results","Discussion","Conclusion","Content","Second Language Version","References","References / Notes","PDF / Files","Publishing","Project Status","Technologies","Links","Files"];
 function formFields(body){
   const lines=(body||"").replace(/\r/g,"").split("\n");
   const fields={}; let current=null;
@@ -345,7 +345,7 @@ function formFields(body){
 function legacyField(body,name){if(!body)return "";const m=body.match(new RegExp("^\\s*"+name.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\$&")+"\\s*:\\s*(.+)$","im"));return m?m[1].trim():""}
 function field(body,name){const value=formFields(body)[name]||legacyField(body,name)||"";return /^_?no response_?$/i.test(value.trim())?"":value}
 function isArchiveIssue(issue){return !!(field(issue.body,"Content Type")||field(issue.body,"Content"))}
-function isPublished(issue){const status=field(issue.body,"Publishing");return (/-\s*\[x\]/i.test(status)&&/public|publish/i.test(status))||getLabels(issue).includes("published")}
+function isPublished(issue){const status=field(issue.body,"Publication Status"),publishing=field(issue.body,"Publishing");return /published|منشور/i.test(status)||(/-\s*\[x\]/i.test(publishing)&&/public|publish/i.test(publishing))||getLabels(issue).includes("published")}
 
 function getType(issue){
   const raw=norm(field(issue.body,"Content Type"));
@@ -380,7 +380,7 @@ function getCategory(issue){
   if(labels.includes("personal"))return "personal";
   return "";
 }
-function title(issue){return field(issue.body,"Title")||issue.title.replace(/^\[New Content\]\s*/i,"")}
+function title(issue){return field(issue.body,"Title")||issue.title.replace(/^\[(?:New Content|Article|Research|Book|Project|Idea|Personal)\]\s*/i,"")}
 function subtitle(issue){return field(issue.body,"Subtitle")||field(issue.body,"Abstract / Summary")||clean(field(issue.body,"Content")||issue.body).slice(0,180)}
 function cover(issue){
   const raw=field(issue.body,"Cover Image").trim();
@@ -391,7 +391,7 @@ function cover(issue){
   try{const url=new URL(candidate);return url.protocol==="https:"||url.protocol==="http:"?url.href:""}catch{return ""}
 }
 function clean(body){return (body||"").replace(/^---[\s\S]*?---/m,"").replace(/^(Title|Subtitle|Category|Date|Author|Authors|Cover Image|Tags|Language|Reading Time|References)\s*:\s*.*$/gmi,"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^#+\s+/gm,"").replace(/[*_`>~-]/g,"").replace(/\s+/g," ").trim()}
-function contentText(issue){return field(issue.body,"Content")||issue.body||""}
+function contentText(issue){const type=getType(issue);if(type==="research"){const parts=[];[["Introduction","Introduction"],["Methodology","Methodology"],["Results","Results"],["Discussion","Discussion"],["Conclusion","Conclusion"],["Content","Content"]].forEach(([k,h])=>{const v=field(issue.body,k);if(v)parts.push("## "+h+"\n\n"+v)});return parts.join("\n\n")||issue.body||""}return field(issue.body,"Content")||issue.body||""}
 function markdown(text){
   let s=escapeHTML(text||"");
   s=s.replace(/^###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^##\s+(.+)$/gm,"<h3>$1</h3>").replace(/^#\s+(.+)$/gm,"<h2>$1</h2>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>");
@@ -454,7 +454,7 @@ function renderFeatured(){
 function renderArticle(num){
   const issue=archiveItems.find(x=>String(x.number)===String(num)),host=document.getElementById("dynamicArticle");if(!host)return;
   if(!issue){host.innerHTML=`<div class="section"><div class="empty">${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</div></div>`;return;}
-  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=contentText(issue),abstract=field(issue.body,"Abstract / Summary"),refs=field(issue.body,"References");
+  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=lang==="ar"&&field(issue.body,"Second Language Version")?field(issue.body,"Second Language Version"):contentText(issue),abstract=field(issue.body,"Abstract / Summary")||field(issue.body,"Description / Summary")||field(issue.body,"Summary"),refs=field(issue.body,"References")||field(issue.body,"References / Notes");
   const meta=[field(issue.body,"Date")||new Date(issue.created_at).toISOString().slice(0,10),typeLabel(type,lang),categoryLabel(cat,lang)].filter(Boolean).join(" · ");
   host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(typeLabel(type,lang))}</div><h2>${escapeHTML(title(issue))}</h2>${field(issue.body,"Subtitle")?`<div class="article-subtitle">${escapeHTML(field(issue.body,"Subtitle"))}</div>`:""}<div class="article-meta">${escapeHTML(meta)}</div>${cv?`<img class="cover" src="${escapeAttr(cv)}" alt="">`:""}${abstract?`<div class="prose"><h3>${lang==="ar"?"الملخص":"Abstract"}</h3>${markdown(abstract)}</div>`:""}<div class="prose">${markdown(body)}</div>${refs?`<div class="prose"><h3>${lang==="ar"?"المراجع":"References"}</h3>${markdown(refs)}</div>`:""}<p style="margin-top:50px"><a class="text-link" href="${escapeAttr(issue.html_url)}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`;
   observeMotion(host);
