@@ -1,0 +1,128 @@
+name: "Project Publication / نشر مشروع"
+description: Publish a project, experiment, build, or case study
+title: "[Project] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Ahmad Sadek — Project
+        اشرح الفكرة، العمل، النتائج، وما تعلمته.
+
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content Type
+      options:
+        - Project / مشروع
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Engineering & Technology / الهندسة والتقنية
+        - Medicine & Pharmacy / الطب والصيدلة
+        - Academic / أكاديمي
+        - Thought & Philosophy / الفكر والفلسفة
+        - Personal / المساحة الشخصية
+        - General / عام
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic / العربية
+        - English / English
+        - Bilingual / ثنائية اللغة
+    validations:
+      required: true
+
+  - type: dropdown
+    id: publication_status
+    attributes:
+      label: Publication Status
+      options:
+        - Published / منشور
+        - Draft / مسودة
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+    validations:
+      required: true
+
+  - type: input
+    id: subtitle
+    attributes:
+      label: Subtitle
+
+  - type: input
+    id: project_status
+    attributes:
+      label: Project Status
+      placeholder: Completed / Ongoing / Concept
+
+  - type: input
+    id: technologies
+    attributes:
+      label: Technologies
+      placeholder: Python, CAD, HTML
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      placeholder: YYYY-MM-DD
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+
+  - type: textarea
+    id: cover_image
+    attributes:
+      label: Cover Image
+      description: اسحب صورة المشروع أو ضع رابطها.
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: Summary
+      description: ملخص مختصر.
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: دراسة الحالة: السياق، الفكرة، المنهج، التحديات، النتائج، وما تعلمته.
+    validations:
+      required: true
+
+  - type: textarea
+    id: second_language
+    attributes:
+      label: Second Language Version
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: GitHub, demo, report, presentation, etc.
+
+  - type: textarea
+    id: pdf_files
+    attributes:
+      label: Files
+      description: الملفات الداعمة.
