@@ -279,26 +279,158 @@ document.querySelectorAll(".filter").forEach(btn=>btn.addEventListener("click",(
 applyLang(localStorage.getItem("ahmad-lang")||"en");
 </script>
 <script id="dynamic-content">
-const API_URL="https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io/issues?state=open&per_page=100";
+const API_URL="https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io/issues?state=open&per_page=100&sort=updated&direction=desc";
 let archiveItems=[];
+
 function escapeHTML(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML}
 function escapeAttr(v){return escapeHTML(v).replace(/"/g,"&quot;")}
 function getLabels(issue){return (issue.labels||[]).map(x=>typeof x==="string"?x:x.name).filter(Boolean).map(x=>x.toLowerCase().trim())}
-function getType(issue){const l=getLabels(issue);for(const x of ["writing","research","book","project","idea","personal"])if(l.includes(x))return x;return "other"}
-function getCategory(issue){const l=getLabels(issue);if(l.includes("pharmacy")||l.includes("medicine"))return "pharmacy";if(l.includes("engineering")||l.includes("technology"))return "engineering";if(l.includes("thought")||l.includes("philosophy")||l.includes("humanities"))return "thought";if(l.includes("personal"))return "personal";return ""}
-function field(body,name){if(!body)return "";const m=body.match(new RegExp("^\\s*"+name+"\\s*:\\s*(.+)$","im"));return m?m[1].trim():""}
-function title(issue){return field(issue.body,"Title")||issue.title}
-function subtitle(issue){return field(issue.body,"Subtitle")||clean(issue.body).slice(0,180)}
+function norm(v){return (v||"").toString().replace(/\r/g,"").trim().toLowerCase().replace(/\s+/g," ")}
+
+// GitHub Issue Forms submit answers as Markdown sections such as:
+// ### Content Type\nArticle / مقال\n\n### Category\nMedicine & Pharmacy / الطب والصيدلة
+// This parser reads those form sections while still supporting the older Title: value format.
+const FORM_FIELDS=["Content Type","Category","Language","Title","Subtitle","Author","Date","Tags","Reading Time","Cover Image","Abstract / Summary","Content","References","PDF / Files","Publishing"];
+function formFields(body){
+  const lines=(body||"").replace(/\r/g,"").split("\n");
+  const fields={}; let current=null;
+  for(const line of lines){
+    const m=line.match(/^###\s+(.+?)\s*$/);
+    if(m && FORM_FIELDS.some(x=>norm(x)===norm(m[1]))){
+      current=FORM_FIELDS.find(x=>norm(x)===norm(m[1]));
+      if(fields[current]===undefined)fields[current]=[];
+      continue;
+    }
+    if(current)fields[current].push(line);
+  }
+  const out={};
+  for(const [k,v] of Object.entries(fields))out[k]=v.join("\n").trim();
+  return out;
+}
+function legacyField(body,name){if(!body)return "";const m=body.match(new RegExp("^\\s*"+name.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\$&")+"\\s*:\\s*(.+)$","im"));return m?m[1].trim():""}
+function field(body,name){return formFields(body)[name]||legacyField(body,name)||""}
+function isArchiveIssue(issue){const body=issue.body||"";return !!(formFields(body)["Content Type"]||formFields(body)["Content"])}
+
+function getType(issue){
+  const raw=norm(field(issue.body,"Content Type"));
+  const labels=getLabels(issue);
+  const map={
+    "article / مقال":"writing","article":"writing","مقال":"writing","writing":"writing",
+    "research / بحث":"research","research":"research","بحث":"research",
+    "book / كتاب":"book","book":"book","كتاب":"book",
+    "project / مشروع":"project","project":"project","مشروع":"project",
+    "idea / فكرة":"idea","idea":"idea","فكرة":"idea",
+    "personal / شخصي":"personal","personal":"personal","شخصي":"personal"
+  };
+  if(map[raw])return map[raw];
+  for(const x of ["writing","research","book","project","idea","personal"])if(labels.includes(x))return x;
+  return "other";
+}
+function getCategory(issue){
+  const raw=norm(field(issue.body,"Category"));
+  const map={
+    "medicine & pharmacy / الطب والصيدلة":"pharmacy","medicine & pharmacy":"pharmacy","pharmacy":"pharmacy","medicine":"pharmacy","الطب والصيدلة":"pharmacy",
+    "engineering & technology / الهندسة والتقنية":"engineering","engineering & technology":"engineering","engineering":"engineering","technology":"engineering","الهندسة والتقنية":"engineering",
+    "thought & philosophy / الفكر والفلسفة":"thought","thought & philosophy":"thought","thought":"thought","philosophy":"thought","humanities":"thought","الفكر والفلسفة":"thought",
+    "personal / المساحة الشخصية":"personal","personal":"personal","المساحة الشخصية":"personal",
+    "academic / أكاديمي":"academic","academic":"academic","أكاديمي":"academic",
+    "general / عام":"general","general":"general","عام":"general"
+  };
+  if(map[raw])return map[raw];
+  const labels=getLabels(issue);
+  if(labels.includes("pharmacy")||labels.includes("medicine"))return "pharmacy";
+  if(labels.includes("engineering")||labels.includes("technology"))return "engineering";
+  if(labels.includes("thought")||labels.includes("philosophy")||labels.includes("humanities"))return "thought";
+  if(labels.includes("personal"))return "personal";
+  return "";
+}
+function title(issue){return field(issue.body,"Title")||issue.title.replace(/^\[New Content\]\s*/i,"")}
+function subtitle(issue){return field(issue.body,"Subtitle")||field(issue.body,"Abstract / Summary")||clean(field(issue.body,"Content")||issue.body).slice(0,180)}
+function cover(issue){
+  const raw=field(issue.body,"Cover Image");
+  if(!raw)return "";
+  const img=raw.match(/!\[[^\]]*\]\(([^)]+)\)/);if(img)return img[1];
+  const url=raw.match(/https?:\/\/[^\s)]+/);return url?url[0]:raw;
+}
 function clean(body){return (body||"").replace(/^---[\s\S]*?---/m,"").replace(/^(Title|Subtitle|Category|Date|Author|Authors|Cover Image|Tags|Language|Reading Time|References)\s*:\s*.*$/gmi,"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/^#+\s+/gm,"").replace(/[*_`>~-]/g,"").replace(/\s+/g," ").trim()}
-function markdown(text){let s=escapeHTML(text||"");s=s.replace(/^###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^##\s+(.+)$/gm,"<h3>$1</h3>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>");return s.split(/\n{2,}/).map(x=>x.trim()?`<p>${x.replace(/\n/g,"<br>")}</p>`:"").join("")}
-function entryEl(issue){const a=document.createElement("a");const type=getType(issue);a.className="entry";a.href="#entry/"+issue.number;a.dataset.type=type;a.dataset.q=(title(issue)+" "+subtitle(issue)+" "+getLabels(issue).join(" ")).toLowerCase();a.innerHTML=`<div class="entry-type">${escapeHTML(type)}</div><div><h3>${escapeHTML(title(issue))}</h3><p>${escapeHTML(subtitle(issue))}</p></div><div class="entry-year">${new Date(issue.created_at).getFullYear()}<br><span style="color:var(--gold)">↗</span></div>`;return a}
-function fillList(el,items){el.innerHTML="";if(!items.length){el.innerHTML=`<div class="empty">${I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet."}</div>`;return}items.forEach(x=>el.appendChild(entryEl(x)))}
-function filtered(){const q=(document.getElementById("search")?.value||"").toLowerCase().trim();const active=document.querySelector(".filter.active")?.dataset.filter||"all";return archiveItems.filter(x=>(active==="all"||getType(x)===active)&&(!q||((title(x)+" "+subtitle(x)+" "+getLabels(x).join(" ")).toLowerCase().includes(q))))}
-function renderDynamicLists(){fillList(document.getElementById("archiveList"),filtered());const maps={writing:"writing",research:"research",projects:"projects",pharmacy:"pharmacy",engineering:"engineering",thought:"thought",personal:"personal",books:"books"};for(const [id,type] of Object.entries(maps)){const sec=document.getElementById(id);if(!sec)continue;let box=sec.querySelector(".entry-list");if(!box){box=document.createElement("div");box.className="entry-list";const s=sec.querySelector(".section");if(s)s.replaceChildren(box)}let items=archiveItems.filter(x=>type==="books"?getType(x)==="book":type==="projects"?getType(x)==="project":getCategory(x)===type||getType(x)===type);fillList(box,items)}}
-function renderFeatured(){const box=document.querySelector("#home .feature-grid");if(!box)return;const top=archiveItems.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);box.innerHTML="";if(!top.length){for(let i=1;i<=3;i++){const f=document.createElement("article");f.className="feature";f.innerHTML=`<small>ARCHIVE</small><h3>${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</h3>`;box.appendChild(f)}return}top.forEach(x=>{const f=document.createElement("a");f.className="feature";f.href="#entry/"+x.number;f.innerHTML=`<small>${escapeHTML(getType(x))}</small><h3>${escapeHTML(title(x))}</h3>`;box.appendChild(f)})}
-function renderArticle(num){const issue=archiveItems.find(x=>String(x.number)===String(num)),host=document.getElementById("dynamicArticle");if(!host)return;if(!issue){host.innerHTML=`<div class="section"><div class="empty">${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</div></div>`;return}const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cover=field(issue.body,"Cover Image");host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(type)}</div><h2>${escapeHTML(title(issue))}</h2><div class="article-subtitle">${escapeHTML(subtitle(issue))}</div><div class="article-meta">${new Date(issue.created_at).getFullYear()} · ${escapeHTML(type)} · ${getLabels(issue).filter(x=>![type,"project","writing","research","book","idea","personal"].includes(x)).slice(0,3).join(" · ")}</div>${cover?`<img class="cover" src="${escapeAttr(cover)}" alt="">`:""}<div class="prose">${markdown(issue.body||"")}</div><p style="margin-top:50px"><a class="text-link" href="${issue.html_url}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`}
-function renderRoute(){let h=location.hash.slice(1)||"home";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));if(h.startsWith("entry/")){document.getElementById("entry").classList.add("active");renderArticle(decodeURIComponent(h.split("/")[1]||""));window.scrollTo({top:0,behavior:"instant"});return}const p=document.getElementById(h)||document.getElementById("home");p.classList.add("active");if(h==="archive")renderDynamicLists();window.scrollTo({top:0,behavior:"instant"})}
-async function loadArchive(){try{const r=await fetch(API_URL,{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw Error();archiveItems=(await r.json()).filter(x=>!x.pull_request);renderFeatured();renderDynamicLists()}catch(e){renderFeatured();}}
-const oldRoute=window.route;window.addEventListener("hashchange",renderRoute);document.querySelectorAll(".lang").forEach(el=>el.addEventListener("click",()=>setTimeout(()=>{renderDynamicLists();renderFeatured();if(location.hash.startsWith("#entry/"))renderArticle(decodeURIComponent(location.hash.split("/")[1]||""));},0)));loadArchive();
+function contentText(issue){return field(issue.body,"Content")||issue.body||""}
+function markdown(text){
+  let s=escapeHTML(text||"");
+  s=s.replace(/^###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^##\s+(.+)$/gm,"<h3>$1</h3>").replace(/^#\s+(.+)$/gm,"<h2>$1</h2>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>");
+  return s.split(/\n{2,}/).map(x=>x.trim()?`<p>${x.replace(/\n/g,"<br>")}</p>`:"").join("");
+}
+function typeLabel(type,lang){
+  const ar={writing:"كتابة",research:"بحث",book:"كتاب",project:"مشروع",idea:"فكرة",personal:"شخصي",other:"مادة"};
+  const en={writing:"Writing",research:"Research",book:"Book",project:"Project",idea:"Idea",personal:"Personal",other:"Entry"};
+  return (lang==="ar"?ar:en)[type]||type;
+}
+function categoryLabel(cat,lang){
+  const ar={pharmacy:"الطب والصيدلة",engineering:"الهندسة والتقنية",thought:"الفكر والفلسفة",personal:"المساحة الشخصية",academic:"أكاديمي",general:"عام"};
+  const en={pharmacy:"Medicine & Pharmacy",engineering:"Engineering & Technology",thought:"Thought & Philosophy",personal:"Personal",academic:"Academic",general:"General"};
+  return (lang==="ar"?ar:en)[cat]||"";
+}
+function entryEl(issue){
+  const a=document.createElement("a");
+  const type=getType(issue),lang=localStorage.getItem("ahmad-lang")||"en",cat=getCategory(issue);
+  a.className="entry";a.href="#entry/"+issue.number;a.dataset.type=type;
+  a.dataset.q=(title(issue)+" "+subtitle(issue)+" "+getLabels(issue).join(" ")+" "+categoryLabel(cat,lang)).toLowerCase();
+  a.innerHTML=`<div class="entry-type">${escapeHTML(typeLabel(type,lang))}</div><div><h3>${escapeHTML(title(issue))}</h3><p>${escapeHTML(subtitle(issue))}</p></div><div class="entry-year">${new Date(issue.created_at).getFullYear()}<br><span style="color:var(--gold)">↗</span></div>`;
+  return a;
+}
+function fillList(el,items){
+  if(!el)return;
+  el.innerHTML="";
+  if(!items.length){el.innerHTML=`<div class="empty">${I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet."}</div>`;return;}
+  items.forEach(x=>el.appendChild(entryEl(x)));
+}
+function filtered(){
+  const q=(document.getElementById("search")?.value||"").toLowerCase().trim();
+  const active=document.querySelector(".filter.active")?.dataset.filter||"all";
+  return archiveItems.filter(x=> (active==="all"||getType(x)===active) && (!q || ((title(x)+" "+subtitle(x)+" "+getLabels(x).join(" ")+" "+field(x.body,"Category")).toLowerCase().includes(q))) );
+}
+function renderDynamicLists(){
+  fillList(document.getElementById("archiveList"),filtered());
+  const maps={writing:"writing",research:"research",projects:"projects",pharmacy:"pharmacy",engineering:"engineering",thought:"thought",personal:"personal",books:"books"};
+  for(const [id,type] of Object.entries(maps)){
+    const sec=document.getElementById(id);if(!sec)continue;
+    let box=sec.querySelector(".entry-list");
+    if(!box){
+      box=document.createElement("div");box.className="entry-list";
+      const s=sec.querySelector(".section");if(s){s.innerHTML="";s.appendChild(box);}else sec.appendChild(box);
+    }
+    let items=archiveItems.filter(x=>type==="books"?getType(x)==="book":type==="projects"?getType(x)==="project":getCategory(x)===type||getType(x)===type);
+    fillList(box,items);
+  }
+}
+function renderFeatured(){
+  const box=document.querySelector("#home .feature-grid");if(!box)return;
+  const top=archiveItems.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);box.innerHTML="";
+  const lang=localStorage.getItem("ahmad-lang")||"en";
+  if(!top.length){for(let i=1;i<=3;i++){const f=document.createElement("article");f.className="feature";f.innerHTML=`<small>ARCHIVE</small><h3>${escapeHTML(I18N[lang].empty||"Nothing published here yet.")}</h3>`;box.appendChild(f)}return;}
+  top.forEach(x=>{const f=document.createElement("a");f.className="feature";f.href="#entry/"+x.number;f.innerHTML=`<small>${escapeHTML(typeLabel(getType(x),lang))}</small><h3>${escapeHTML(title(x))}</h3>`;box.appendChild(f)});
+}
+function renderArticle(num){
+  const issue=archiveItems.find(x=>String(x.number)===String(num)),host=document.getElementById("dynamicArticle");if(!host)return;
+  if(!issue){host.innerHTML=`<div class="section"><div class="empty">${escapeHTML(I18N[localStorage.getItem("ahmad-lang")||"en"].empty||"Nothing published here yet.")}</div></div>`;return;}
+  const lang=localStorage.getItem("ahmad-lang")||"en",t=I18N[lang]||I18N.en,type=getType(issue),cat=getCategory(issue),cv=cover(issue),body=contentText(issue),abstract=field(issue.body,"Abstract / Summary"),refs=field(issue.body,"References");
+  const meta=[field(issue.body,"Date")||new Date(issue.created_at).toISOString().slice(0,10),typeLabel(type,lang),categoryLabel(cat,lang)].filter(Boolean).join(" · ");
+  host.innerHTML=`<div class="article-page"><a class="back" href="#archive">← ${t.back||"Back to archive"}</a><div class="article-type">${escapeHTML(typeLabel(type,lang))}</div><h2>${escapeHTML(title(issue))}</h2>${field(issue.body,"Subtitle")?`<div class="article-subtitle">${escapeHTML(field(issue.body,"Subtitle"))}</div>`:""}<div class="article-meta">${escapeHTML(meta)}</div>${cv?`<img class="cover" src="${escapeAttr(cv)}" alt="">`:""}${abstract?`<div class="prose"><h3>${lang==="ar"?"الملخص":"Abstract"}</h3>${markdown(abstract)}</div>`:""}<div class="prose">${markdown(body)}</div>${refs?`<div class="prose"><h3>${lang==="ar"?"المراجع":"References"}</h3>${markdown(refs)}</div>`:""}<p style="margin-top:50px"><a class="text-link" href="${escapeAttr(issue.html_url)}" target="_blank" rel="noopener">${t.read||"Read entry"} <span>↗</span></a></p></div>`;
+}
+function renderRoute(){
+  let h=location.hash.slice(1)||"home";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  if(h.startsWith("entry/")){document.getElementById("entry").classList.add("active");renderArticle(decodeURIComponent(h.split("/")[1]||""));window.scrollTo({top:0,behavior:"instant"});return;}
+  const p=document.getElementById(h)||document.getElementById("home");p.classList.add("active");if(h==="archive")renderDynamicLists();window.scrollTo({top:0,behavior:"instant"});
+}
+async function loadArchive(){
+  try{
+    const r=await fetch(API_URL,{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw Error();
+    archiveItems=(await r.json()).filter(x=>!x.pull_request&&isArchiveIssue(x));
+    renderFeatured();renderDynamicLists();
+    if(location.hash.startsWith("#entry/"))renderArticle(decodeURIComponent(location.hash.split("/")[1]||""));
+  }catch(e){renderFeatured();}
+}
+window.addEventListener("hashchange",renderRoute);
+document.querySelectorAll(".lang").forEach(el=>el.addEventListener("click",()=>setTimeout(()=>{renderDynamicLists();renderFeatured();if(location.hash.startsWith("#entry/"))renderArticle(decodeURIComponent(location.hash.split("/")[1]||""));},0)));
+loadArchive();
 </script>
 </body></html>
