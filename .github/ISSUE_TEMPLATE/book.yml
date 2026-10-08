@@ -1,0 +1,129 @@
+name: Book / كتاب
+description: Publish a book or long-form work
+title: "[Book] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Ahmad Sadek — Book
+        يمكنك نشر كتاب كامل أو عمل طويل وقراءته داخل الموقع.
+
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content Type
+      options:
+        - Book / كتاب
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Medicine & Pharmacy / الطب والصيدلة
+        - Engineering & Technology / الهندسة والتقنية
+        - Thought & Philosophy / الفكر والفلسفة
+        - Personal / المساحة الشخصية
+        - Academic / أكاديمي
+        - General / عام
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic / العربية
+        - English / English
+        - Bilingual / ثنائية اللغة
+    validations:
+      required: true
+
+  - type: dropdown
+    id: publication_status
+    attributes:
+      label: Publication Status
+      options:
+        - Published / منشور
+        - Draft / مسودة
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+    validations:
+      required: true
+
+  - type: input
+    id: subtitle
+    attributes:
+      label: Subtitle
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      value: Ahmad Sadek
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      placeholder: YYYY-MM-DD
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+
+  - type: textarea
+    id: cover_image
+    attributes:
+      label: Cover Image
+      description: اسحب غلاف الكتاب إلى هنا أو ضع رابطه.
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: Description / Summary
+      description: وصف الكتاب وملخصه.
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: نص الكتاب كاملًا، ويفضل تنظيمه بعناوين الفصول باستخدام Markdown.
+      placeholder: |
+        ## Chapter One
+        ...
+
+        ## Chapter Two
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: second_language
+    attributes:
+      label: Second Language Version
+      description: النسخة باللغة الثانية إذا كانت موجودة.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References / Notes
+      description: ملاحظات أو مراجع اختيارية.
+
+  - type: textarea
+    id: pdf_files
+    attributes:
+      label: PDF / Files
+      description: اسحب ملف الكتاب PDF إلى هنا.
