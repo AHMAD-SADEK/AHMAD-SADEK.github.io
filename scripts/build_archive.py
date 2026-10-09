@@ -184,6 +184,15 @@ def category_key(raw: str) -> str:
     return CATEGORY_ALIASES.get(normalize(raw), "general" if not raw else "general")
 
 
+def primary_language(raw_language: str, content: str) -> str:
+    language = normalize(raw_language)
+    if "bilingual" not in language and ("arabic" in language or "العربية" in language):
+        return "ar"
+    if "bilingual" not in language and ("english" in language or language == "en"):
+        return "en"
+    return "ar" if re.search(r"[\u0600-\u06FF]", content or "") else "en"
+
+
 def parse_date(raw: str, created_at: str) -> str:
     value = raw.strip()
     try:
@@ -304,6 +313,7 @@ def build_item(issue: dict[str, Any]) -> dict[str, Any] | None:
         "type": kind,
         "category": category_key(field(fields, "Category")),
         "language": field(fields, "Language") or "Bilingual",
+        "primaryLanguage": primary_language(field(fields, "Language"), content),
         "author": author,
         "date": date_value,
         "readingTime": reading_time,
