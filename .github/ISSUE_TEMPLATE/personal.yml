@@ -2,6 +2,11 @@ name: Personal / شخصي
 description: Publish a personal reflection, experience, lesson, or journal entry
 title: "[Personal] "
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **تنبيه مهم / Important:** المسودة لا تظهر في الأرشيف، لكن قضية GitHub نفسها عامة ويمكن للآخرين قراءتها. لا تضع كلمات مرور أو معلومات خاصة أو محتوى غير جاهز للنشر هنا.
+
   - type: dropdown
     id: content_type
     attributes:
