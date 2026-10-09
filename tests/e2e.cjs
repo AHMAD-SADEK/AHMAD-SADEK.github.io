@@ -91,7 +91,7 @@ async function main() {
         display: titleStyle.display,
         whiteSpace: titleStyle.whiteSpace,
         gridAlignment: gridStyle.alignItems,
-        columnCount: gridStyle.gridTemplateColumns.trim().split(/\\s+/).length,
+        columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
         fits: el.scrollWidth <= el.clientWidth,
         spanTopDifference: Math.abs(spans[0].getBoundingClientRect().top - spans[1].getBoundingClientRect().top)
       };
@@ -110,7 +110,7 @@ async function main() {
       return {
         display: titleStyle.display,
         whiteSpace: titleStyle.whiteSpace,
-        columnCount: gridStyle.gridTemplateColumns.trim().split(/\\s+/).length,
+        columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
         fits: el.scrollWidth <= el.clientWidth
       };
     });
