@@ -11,7 +11,7 @@ A bilingual (Arabic/English) personal archive built as a lightweight static site
 5. The archive is generated automatically from open issues authored by the repository owner account, `AHMAD-SADEK`, with an explicit Published status. Issues from other accounts, closed issues, drafts, and pull requests are not exported.
 6. To unpublish an item, change its Publication Status back to **Draft** or close its issue. Reopen the issue and set it to Published to republish.
 
-Do not put passwords, access tokens, private correspondence, or other secrets in issue bodies: issue data is stored in GitHub.
+**Privacy note:** “Draft” means hidden from the website archive only. Because this repository is public, the GitHub issue and its body are still publicly readable. Do not put passwords, access tokens, private correspondence, confidential research, or other sensitive information in an issue.
 
 ## Supported content
 
