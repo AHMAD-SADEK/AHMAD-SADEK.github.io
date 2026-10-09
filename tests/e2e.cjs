@@ -91,6 +91,7 @@ async function main() {
         display: titleStyle.display,
         whiteSpace: titleStyle.whiteSpace,
         gridAlignment: gridStyle.alignItems,
+        columnWidths: gridStyle.gridTemplateColumns.trim().split(/\s+/).map((value) => parseFloat(value)),
         columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
         fits: el.scrollWidth <= el.clientWidth,
         spanTopDifference: Math.abs(spans[0].getBoundingClientRect().top - spans[1].getBoundingClientRect().top)
@@ -99,7 +100,9 @@ async function main() {
     assert.equal(desktopHero.display, "flex", "the Arabic name should be composed horizontally");
     assert.equal(desktopHero.whiteSpace, "nowrap", "the Arabic name should stay on one line");
     assert.equal(desktopHero.columnCount, 2, "the desktop Arabic hero should balance name and intro in two columns");
-    assert.equal(desktopHero.gridAlignment, "center", "the name and intro should share a visual center");
+    assert.equal(desktopHero.gridAlignment, "end", "the intro should retain its original lower alignment");
+    assert.ok(desktopHero.columnWidths[0] > desktopHero.columnWidths[1],
+      "the Arabic hero should restore the wider name column and narrower intro column");
     assert.equal(desktopHero.fits, true, "the one-line Arabic name should fit its desktop column");
     assert.ok(desktopHero.spanTopDifference < 2, "both parts of the Arabic name should sit on the same line");
 
