@@ -16,6 +16,8 @@
       try {
         const url = new URL(candidate);
         if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+        if (url.username || url.password) return "";
+        if (kind === "image" && url.protocol !== "https:") return "";
         return url.href;
       } catch { return ""; }
     }

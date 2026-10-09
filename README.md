@@ -23,13 +23,18 @@ Links entered under **PDF / Files** appear as attachments. PDF attachments inclu
 
 - `index.html` — page structure and metadata
 - `assets/css/styles.css` — responsive editorial design and accessibility styles
-- `assets/js/app.js` — bilingual navigation, search, archive lists, and article pages
+- `assets/js/app.js` — bilingual navigation, search, and archive lists
+- `assets/js/article.js` — standalone article-page rendering and language switching
 - `assets/js/markdown.js` — safe Markdown renderer
-- `archive.json` — generated public content consumed by the site
-- `scripts/build_archive.py` — fetches issue metadata and generates the approved archive
+- `archive.json` — generated public content consumed by the archive
+- `articles/<issue-number>/index.html` — generated, crawlable article permalinks with per-article metadata
+- `sitemap.xml` and `robots.txt` — search discovery files
+- `favicon.svg` — reusable site icon
+- `scripts/build_archive.py` — fetches approved issues, generates article pages, and updates the sitemap
 - `.github/workflows/build-approved-archive.yml` — refreshes the archive when an issue changes
 - `.github/ISSUE_TEMPLATE/` — content submission forms
-- `tests/test_build_archive.py` — publication-policy and URL-validation tests
+- `tests/test_build_archive.py` — publication-policy, parser, article-page, sitemap, and URL-validation tests
+- `tests/test_markdown.js` — Markdown rendering and injection-safety tests
 
 ## Validation
 
@@ -41,6 +46,8 @@ python -m py_compile scripts/build_archive.py tests/test_build_archive.py
 python -m json.tool archive.json > /dev/null
 node --check assets/js/markdown.js
 node --check assets/js/app.js
+node --check assets/js/article.js
+node tests/test_markdown.js
 ```
 
 GitHub Actions runs these checks for repository changes. Performance scores should be measured on the deployed site rather than inferred from source code alone.
