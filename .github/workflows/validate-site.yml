@@ -1,0 +1,36 @@
+name: Validate archive site
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [site/archive-quality-and-security]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate Python syntax
+        run: python -m py_compile scripts/build_archive.py tests/test_build_archive.py
+      - name: Run archive security tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate published archive JSON
+        run: python -m json.tool archive.json > /dev/null
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/markdown.js
+          node --check assets/js/app.js

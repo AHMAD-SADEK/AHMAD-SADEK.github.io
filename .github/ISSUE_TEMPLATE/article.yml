@@ -49,8 +49,8 @@ body:
       label: Publication Status
       description: Published = يظهر للعامة / Draft = يبقى مخفيًا
       options:
-        - Published / منشور
         - Draft / مسودة
+        - Published / منشور
       default: 0
     validations:
       required: true

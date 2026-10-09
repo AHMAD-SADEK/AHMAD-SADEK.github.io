@@ -46,8 +46,8 @@ body:
     attributes:
       label: Publication Status
       options:
-        - Published / منشور
         - Draft / مسودة
+        - Published / منشور
       default: 0
     validations:
       required: true
