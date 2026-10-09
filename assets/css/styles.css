@@ -86,6 +86,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .hero h1 { margin: 0; font: 500 clamp(88px, 13vw, 180px)/.86 var(--serif); letter-spacing: -.045em; }
 .hero h1 .first-name { color: var(--accent); }
 .hero h1 .last-name { font-style: italic; }
+[dir="rtl"] .hero h1 .last-name { font-style: normal; }
 .hero-lead { max-width: 450px; margin: 0 0 23px; font: 400 clamp(27px, 2.7vw, 37px)/1.12 var(--serif); }
 .hero-meta { margin-bottom: 29px; color: var(--muted); font: 600 10px/1.7 var(--sans); letter-spacing: .09em; text-transform: uppercase; }
 .text-link {
