@@ -104,6 +104,13 @@ def content_type_from_body(body: str, fallback_title: str = "") -> str:
 
 
 def parse_form_fields(body: str, schema: list[str]) -> dict[str, str]:
+    """Parse GitHub Issue Forms without mistaking article headings for later fields.
+
+    Fields before Content are read in form order. Once Content starts, known trailing
+    form fields are matched backwards from the end of the issue body. This keeps
+    Markdown headings inside a body (for example "### References") inside Content
+    when the actual References field occurs later in the form.
+    """
     lines = (body or "").replace("\r", "").split("\n")
     headers: list[tuple[int, str]] = []
     for index, line in enumerate(lines):
@@ -111,30 +118,54 @@ def parse_form_fields(body: str, schema: list[str]) -> dict[str, str]:
         if match:
             headers.append((index, match.group(1).strip()))
 
+    normalized_schema = [normalize(name) for name in schema]
+    if "content type" not in normalized_schema or "content" not in normalized_schema:
+        return {}
+    content_position = normalized_schema.index("content")
     start = next((i for i, name in headers if normalize(name) == "content type"), None)
     if start is None:
         return {}
 
-    matched: list[tuple[str, int]] = [("Content Type", start)]
+    selected: list[tuple[str, int]] = [("Content Type", start)]
     cursor = start
-    for expected in schema[1:]:
+
+    # The metadata that precedes Content follows the Issue Form's declared order.
+    for expected in schema[1:content_position + 1]:
         expected_norm = normalize(expected)
-        found = next(
-            ((i, name) for i, name in headers
-             if i > cursor and normalize(name) == expected_norm),
-            None,
-        )
+        found = next(((i, name) for i, name in headers
+                      if i > cursor and normalize(name) == expected_norm), None)
         if found is None:
             continue
         cursor, _ = found
-        matched.append((expected, cursor))
+        selected.append((expected, cursor))
+
+    content_header = next((i for name, i in selected if normalize(name) == "content"), None)
+    if content_header is None:
+        return {}
+
+    # Find trailing form fields from the end. Duplicate-looking Markdown headings
+    # inside Content occur before the actual trailing fields and are therefore ignored.
+    reverse_cursor = len(lines)
+    trailing: list[tuple[str, int]] = []
+    for expected in reversed(schema[content_position + 1:]):
+        expected_norm = normalize(expected)
+        found = next(((i, name) for i, name in reversed(headers)
+                      if content_header < i < reverse_cursor
+                      and normalize(name) == expected_norm), None)
+        if found is None:
+            continue
+        index, _ = found
+        trailing.append((expected, index))
+        reverse_cursor = index
+
+    selected.extend(trailing)
+    selected.sort(key=lambda pair: pair[1])
 
     fields: dict[str, str] = {}
-    for position, (name, line_index) in enumerate(matched):
-        next_index = matched[position + 1][1] if position + 1 < len(matched) else len(lines)
+    for position, (name, line_index) in enumerate(selected):
+        next_index = selected[position + 1][1] if position + 1 < len(selected) else len(lines)
         fields[name] = clean_value("\n".join(lines[line_index + 1:next_index]))
     return fields
-
 
 def legacy_fields(body: str) -> dict[str, str]:
     fields: dict[str, str] = {}
