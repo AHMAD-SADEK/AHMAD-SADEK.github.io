@@ -112,8 +112,19 @@ class ArchiveBuilderTests(unittest.TestCase):
         self.assertEqual(result["title"], "A safe title")
         self.assertEqual(result["type"], "writing")
         self.assertEqual(result["category"], "thought")
+        self.assertEqual(result["primaryLanguage"], "en")
         self.assertEqual(result["date"], "2026-10-08")
         self.assertEqual(result["tags"], ["learning", "philosophy"])
+
+    def test_primary_language_uses_form_choice_and_script_detection(self):
+        body = article_body().replace("English / English", "Arabic / العربية")
+        arabic = build_item(issue(body))
+        self.assertEqual(arabic["primaryLanguage"], "ar")
+        body = article_body().replace("English / English", "Bilingual / ثنائية اللغة").replace(
+            "A useful article.", "هذه مادة مكتوبة باللغة العربية."
+        )
+        bilingual_arabic = build_item(issue(body))
+        self.assertEqual(bilingual_arabic["primaryLanguage"], "ar")
 
     def test_non_owner_author_cannot_publish(self):
         self.assertIsNone(build_item(issue(article_body(), login="someone-else")))
