@@ -2,6 +2,7 @@ import unittest
 
 from scripts.build_archive import (
     build_archive,
+    build_article_page,
     build_item,
     explicitly_published,
     extract_links,
@@ -164,6 +165,16 @@ class ArchiveBuilderTests(unittest.TestCase):
     def test_attachment_links_are_extracted_only_as_http_urls(self):
         items = extract_links("[Paper.pdf](https://example.org/paper.pdf)\njavascript:alert(1)")
         self.assertEqual(items, [{"label": "Paper.pdf", "url": "https://example.org/paper.pdf"}])
+
+    def test_article_page_has_unique_metadata_and_escapes_script_breakout(self):
+        dangerous = article_body(content="A harmless paragraph.\\n\\n</script><img src=x onerror=alert(1)>")
+        item = build_item(issue(dangerous, number=27))
+        page = build_article_page(item)
+        self.assertIn('rel="canonical" href="https://ahmad-sadek.github.io/articles/27/"', page)
+        self.assertIn('property="og:type" content="article"', page)
+        self.assertIn('id="articleData" type="application/json"', page)
+        self.assertIn(r"\\u003c/script\\u003e", page)
+        self.assertNotIn("</script><img src=x", page)
 
     def test_archive_is_sorted_newest_first_and_only_contains_approved_content(self):
         older = issue(article_body(), number=1)
