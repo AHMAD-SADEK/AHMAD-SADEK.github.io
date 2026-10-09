@@ -1,0 +1,11 @@
+{
+  "name": "ahmad-sadek-personal-archive",
+  "private": true,
+  "description": "Browser regression tests for the static personal archive",
+  "scripts": {
+    "test:e2e": "node tests/e2e.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.0"
+  }
+}
