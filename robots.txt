@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ahmad-sadek.github.io/sitemap.xml
