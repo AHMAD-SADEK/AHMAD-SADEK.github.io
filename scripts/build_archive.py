@@ -736,7 +736,10 @@ def write_article_pages(items: list[dict[str, Any]]) -> None:
 
 
 def write_sitemap(items: list[dict[str, Any]]) -> None:
-    urls = [f"<url><loc>{xml_escape(SITE_URL)}/</loc></url>"]
+    urls = [
+        f"<url><loc>{xml_escape(SITE_URL)}/</loc></url>",
+        f"<url><loc>{xml_escape(SITE_URL)}/ar/</loc></url>",
+    ]
     for item in items:
         article_id = int(item["id"])
         loc = xml_escape(f"{SITE_URL}/articles/{article_id}/")

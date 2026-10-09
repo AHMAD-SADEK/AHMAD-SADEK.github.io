@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const DATA_URL = "archive.json";
+  const DATA_URL = "/archive.json";
   const EMAIL = "ahmadsadekalbasatneh@gmail.com";
   const I18N = {
     en: {
@@ -27,6 +27,7 @@
       libraryText: "A growing archive where every piece becomes part of a larger story.",
       contact: "Contact", contactHeadline: "For ideas worth discussing.",
       contactText: "For research, collaboration, academic work, or simply a thoughtful exchange.",
+      publishingSystem: "Explore how the archive is built on GitHub",
       aboutLabel: "ABOUT — AHMAD SADEK", aboutTitle: "The person behind the archive.",
       aboutIntro: "A pharmacy student building a broad body of work across science, technology, thought, and writing.",
       profile: "PROFILE", aboutBody: "I am Ahmad Sadek, a student of pharmacy at Lebanese International University. Beyond one discipline, I am interested in learning deeply, building meaningful things, investigating questions, and preserving the ideas that shape my thinking.",
@@ -71,7 +72,7 @@
       skip: "انتقل إلى المحتوى", brandMark: "أص", brandName: "أحمد صادق",
       navHome: "الرئيسية", navAbout: "عن أحمد", navArchive: "الأرشيف", navWriting: "الكتابات",
       navResearch: "الأبحاث", navBooks: "الكتب", navProjects: "المشاريع", menuLabel: "القائمة",
-      eyebrow: "أرشيف أحمد صادق الشخصي", firstName: "أحمد", lastName: "صادق.",
+      eyebrow: "أرشيف أحمد صادق الشخصي", firstName: "أحمد", lastName: "صادق",
       heroLead: "مساحة هادئة لما أدرسه، وأبنيه، وأتساءل عنه، وأكتبه.",
       heroMeta: "طالب صيدلة · باحث · كاتب · عقل فضولي",
       discover: "اكتشف الشخص خلف الأرشيف", identity: "الهوية",
@@ -89,6 +90,7 @@
       libraryText: "أرشيف متنامٍ تصبح فيه كل إضافة جزءًا من قصة أكبر.",
       contact: "تواصل", contactHeadline: "للأفكار التي تستحق النقاش.",
       contactText: "للبحث والتعاون والعمل الأكاديمي، أو لمجرد حوار هادئ وهادف.",
+      publishingSystem: "تعرّف إلى طريقة بناء هذا الأرشيف ونشر مواده على GitHub",
       aboutLabel: "عن أحمد صادق", aboutTitle: "الشخص خلف الأرشيف.",
       aboutIntro: "طالب صيدلة يبني عالمًا واسعًا من العمل بين العلوم والتقنية والفكر والكتابة.",
       profile: "نبذة", aboutBody: "أنا أحمد صادق، طالب صيدلة في الجامعة اللبنانية الدولية. لا أحصر فضولي في تخصص واحد؛ أهتم بالتعلّم العميق، وبناء الأشياء ذات المعنى، والبحث في الأسئلة، وحفظ الأفكار التي تشكل طريقة تفكيري.",
@@ -157,6 +159,7 @@
     return window.ArchiveMarkdown ? window.ArchiveMarkdown.safeURL(value, kind) : "";
   }
   function languageSafeRead() {
+    if (/^\/ar(?:\/|$)/.test(window.location.pathname)) return "ar";
     try { return localStorage.getItem("ahmad-lang") === "ar" ? "ar" : "en"; }
     catch (_) { return "en"; }
   }
@@ -164,7 +167,14 @@
     try { localStorage.setItem("ahmad-lang", value); } catch (_) { /* Storage may be unavailable. */ }
   }
   function setLanguage(language) {
-    currentLanguage = language === "ar" ? "ar" : "en";
+    const requestedLanguage = language === "ar" ? "ar" : "en";
+    const isArabicPath = /^\/ar(?:\/|$)/.test(window.location.pathname);
+    if ((requestedLanguage === "ar") !== isArabicPath) {
+      languageSafeWrite(requestedLanguage);
+      window.location.href = (requestedLanguage === "ar" ? "/ar/" : "/") + window.location.hash;
+      return;
+    }
+    currentLanguage = requestedLanguage;
     languageSafeWrite(currentLanguage);
     document.documentElement.lang = currentLanguage;
     document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
@@ -212,7 +222,10 @@
     };
     const titleElement = document.getElementById(titleMap[page] || "homeTitle");
     const heading = item ? item.title : (titleElement ? titleElement.textContent : "Ahmad Sadek");
-    document.title = (heading || "Ahmad Sadek") + " — Ahmad Sadek";
+    const siteName = currentLanguage === "ar" ? "أحمد صادق" : "Ahmad Sadek";
+    document.title = page === "home"
+      ? (currentLanguage === "ar" ? "أحمد صادق — الأرشيف الشخصي" : "Ahmad Sadek — Personal Archive")
+      : (heading || siteName) + " — " + siteName;
     const description = item
       ? (item.subtitle || item.abstract || item.title)
       : (page === "home" ? t("heroLead") : (document.querySelector('[data-page="' + CSS.escape(page) + '"] .page-intro')?.textContent || t("manifesto")));

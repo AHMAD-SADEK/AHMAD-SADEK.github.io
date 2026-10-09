@@ -21,7 +21,8 @@ Links entered under **PDF / Files** appear as attachments. PDF attachments inclu
 
 ## Repository layout
 
-- `index.html` — page structure and metadata
+- `index.html` — English homepage, metadata, and language alternate links
+- `ar/index.html` — Arabic-language landing page with its own canonical URL and reciprocal `hreflang` links
 - `assets/css/styles.css` — responsive editorial design and accessibility styles
 - `assets/js/app.js` — bilingual navigation, search, and archive lists
 - `assets/js/article.js` — standalone article-page rendering and language switching

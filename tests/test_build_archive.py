@@ -233,6 +233,7 @@ class ArchiveBuilderTests(unittest.TestCase):
             namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
             locations = [node.text for node in root.findall("sm:url/sm:loc", namespace)]
             self.assertIn("https://ahmad-sadek.github.io/", locations)
+            self.assertIn("https://ahmad-sadek.github.io/ar/", locations)
             self.assertIn("https://ahmad-sadek.github.io/articles/45/", locations)
 
     def test_archive_is_sorted_newest_first_and_only_contains_approved_content(self):
