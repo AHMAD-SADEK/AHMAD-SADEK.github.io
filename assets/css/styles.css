@@ -13,7 +13,6 @@
   --max: 1220px;
   --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --arabic: "Amiri", Georgia, serif;
-  --arabic-display: "Aref Ruqaa", "Amiri", Georgia, serif;
   --arabic-ui: "Noto Kufi Arabic", "Segoe UI", sans-serif;
   --sans: "Manrope", "Segoe UI", Arial, sans-serif;
   --shadow: 0 18px 55px rgb(43 41 36 / 7%);
@@ -190,44 +189,21 @@ a.feature { display: block; }
 }
 [dir="rtl"] .brand { direction: rtl; }
 [dir="rtl"] .hero-grid, [dir="rtl"] .split, [dir="rtl"] .library-grid, [dir="rtl"] .contact-grid { direction: rtl; }
-/* Refined Arabic hero: a compact calligraphic name, closer columns,
-   and a lower intro that meets the second word instead of floating away. */
-[dir="rtl"] .hero { padding: 88px 0 64px; }
+/* The Arabic headline needs tighter leading and optical centering against the intro. */
 [dir="rtl"] .hero-grid {
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
-  align-items: start;
-  gap: clamp(24px, 2.5vw, 36px);
-  margin-top: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(30px, 5vw, 68px);
 }
-[dir="rtl"] .hero-grid > div:nth-child(2) {
-  margin-top: clamp(58px, 5vw, 70px);
-  transform: translateX(68px);
-}
-[dir="rtl"] .hero-lead { max-width: 520px; }
-/* Aref Ruqaa turns the two words into a compact signature. The second word
-   overlaps the first vertically by design, with a small sideways tuck. */
+/* Arabic word shapes need a horizontal composition rather than the English line break. */
 [dir="rtl"] .hero h1.arabic-home-title {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  gap: 0;
+  gap: .12em;
   white-space: nowrap;
-  font: 700 clamp(102px, 8.2vw, 132px)/.85 var(--arabic-display);
+  font: 700 clamp(68px, 8vw, 118px)/1.25 var(--arabic);
   letter-spacing: 0;
-}
-[dir="rtl"] .hero h1.arabic-home-title .first-name {
-  position: relative;
-  z-index: 2;
-  color: var(--accent);
-  transform: translateY(-.015em);
-}
-[dir="rtl"] .hero h1.arabic-home-title .last-name {
-  position: relative;
-  z-index: 1;
-  color: var(--ink);
-  margin-top: -.13em;
-  transform: translate(-.035em, .025em);
 }
 [dir="rtl"] .hero-lead { font: 400 clamp(28px, 3vw, 39px)/1.45 var(--arabic); }
 [dir="rtl"] .hero-meta { font-size: 12px; line-height: 1.9; }
@@ -284,21 +260,15 @@ a.feature { display: block; }
   .article-prose h3 { font-size: 27px; }
   .article-prose table { display: block; overflow-x: auto; }
   .site-footer { flex-direction: column; gap: 8px; }
-  [dir="rtl"] .hero { padding: 70px 0 64px; }
   [dir="rtl"] .hero-grid {
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
-    gap: 26px;
-  }
-  [dir="rtl"] .hero-grid > div:nth-child(2) {
-    margin-top: 0;
-    transform: none;
+    gap: 30px;
   }
   [dir="rtl"] .hero h1.arabic-home-title {
-    font-size: clamp(90px, 24vw, 114px);
-    line-height: .85;
+    font-size: clamp(62px, 16vw, 82px);
+    line-height: 1.25;
   }
-  [dir="rtl"] .hero h1.arabic-home-title .last-name { margin-top: -.12em; }
   [dir="rtl"] .lead-text { font-size: clamp(31px, 9vw, 52px); }
   [dir="rtl"] .page-hero h1 { font-size: clamp(53px, 15vw, 98px); line-height: 1.22; }
   [dir="rtl"] .article-page h1 { font-size: clamp(46px, 13vw, 78px); }
