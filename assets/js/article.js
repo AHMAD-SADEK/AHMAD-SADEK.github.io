@@ -103,10 +103,12 @@
   }
 
   function renderAttachments() {
-    const attachmentItems = Array.isArray(item.attachments) ? item.attachments : [];
-    const linkItems = Array.isArray(item.links) ? item.links : [];
     const attachmentHost = byId("attachmentsContent");
     const linkHost = byId("linksContent");
+    attachmentHost.replaceChildren();
+    linkHost.replaceChildren();
+    const attachmentItems = Array.isArray(item.attachments) ? item.attachments : [];
+    const linkItems = Array.isArray(item.links) ? item.links : [];
     let attachmentCount = 0;
     let linkCount = 0;
 
@@ -171,7 +173,7 @@
     safeText(byId("referencesLabel"), t.references);
     safeText(byId("attachmentsLabel"), t.attachments);
     safeText(byId("linksLabel"), t.links);
-    safeText(byId("articleSource"), "");
+    byId("articleSource").replaceChildren();
 
     typeAndCategory();
     byId("articleMeta").replaceChildren();
@@ -219,12 +221,13 @@
     } else {
       byId("articleReferences").hidden = true;
     }
+
+    renderAttachments();
+    const sourceUrl = safeURL(item.sourceUrl, "link");
+    if (sourceUrl) addOutboundLink(byId("articleSource"), sourceUrl, t.source + " ↗");
   }
 
   function init() {
-    const sourceUrl = safeURL(item.sourceUrl, "link");
-    if (sourceUrl) addOutboundLink(byId("articleSource"), sourceUrl, labels[language].source + " ↗");
-    renderAttachments();
     render();
     document.querySelectorAll("[data-lang]").forEach((button) => {
       button.addEventListener("click", () => {
