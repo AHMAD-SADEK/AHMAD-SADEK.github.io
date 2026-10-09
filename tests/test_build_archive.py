@@ -14,6 +14,7 @@ from scripts.build_archive import (
     explicitly_published,
     extract_links,
     image_url,
+    render_markdown_static,
     parse_form_fields,
     SCHEMAS,
     write_article_pages,
@@ -184,10 +185,22 @@ class ArchiveBuilderTests(unittest.TestCase):
         self.assertIn('id="articleData" type="application/json"', page)
         self.assertIn(r"\u003c/script\u003e", page)
         self.assertNotIn("</script><img src=x", page)
+        self.assertIn("A harmless paragraph.", page)
+        self.assertNotIn("<img src=x onerror=alert(1)>", page)
+        self.assertNotIn("<script>alert", page)
         payload = re.search(r'<script id="articleData" type="application/json">(.*?)</script>', page, re.S)
         self.assertIsNotNone(payload)
         decoded = json.loads(payload.group(1))
         self.assertIn("</script><img src=x", decoded["contentMarkdown"])
+
+    def test_static_markdown_renderer_escapes_html_and_rejects_unsafe_urls(self):
+        source = "# Heading\n\n**Bold** [unsafe](javascript:alert(1))\n\n<script>alert(1)</script>\n\n![x](javascript:alert(1))"
+        rendered = render_markdown_static(source)
+        self.assertIn("<h2>Heading</h2>", rendered)
+        self.assertIn("<strong>Bold</strong>", rendered)
+        self.assertNotIn("<script>", rendered)
+        self.assertNotIn('href="javascript:', rendered)
+        self.assertNotIn('src="javascript:', rendered)
 
     def test_external_urls_reject_credentials_and_cover_prose(self):
         self.assertEqual(allowed_url("https://user:pass@example.org/file.pdf"), "")
