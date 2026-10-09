@@ -1,14 +1,23 @@
+import json
+import re
+import tempfile
 import unittest
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from unittest.mock import patch
 
 from scripts.build_archive import (
     build_archive,
     build_article_page,
     build_item,
+    allowed_url,
     explicitly_published,
     extract_links,
     image_url,
     parse_form_fields,
     SCHEMAS,
+    write_article_pages,
+    write_sitemap,
 )
 
 OWNER = "AHMAD-SADEK"
@@ -175,6 +184,42 @@ class ArchiveBuilderTests(unittest.TestCase):
         self.assertIn('id="articleData" type="application/json"', page)
         self.assertIn(r"\u003c/script\u003e", page)
         self.assertNotIn("</script><img src=x", page)
+        payload = re.search(r'<script id="articleData" type="application/json">(.*?)</script>', page, re.S)
+        self.assertIsNotNone(payload)
+        decoded = json.loads(payload.group(1))
+        self.assertIn("</script><img src=x", decoded["contentMarkdown"])
+
+    def test_external_urls_reject_credentials_and_cover_prose(self):
+        self.assertEqual(allowed_url("https://user:pass@example.org/file.pdf"), "")
+        self.assertEqual(allowed_url("javascript:alert(1)"), "")
+        self.assertEqual(image_url("An explanatory note: https://example.org/not-a-cover"), "")
+        self.assertEqual(image_url("https://example.org/cover.png"), "https://example.org/cover.png")
+
+    def test_unpublished_article_pages_are_removed_without_deleting_other_folders(self):
+        item = build_item(issue(article_body(), number=44))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            articles_dir = Path(temp_dir) / "articles"
+            notes_dir = articles_dir / "notes"
+            notes_dir.mkdir(parents=True)
+            (notes_dir / "keep.txt").write_text("keep", encoding="utf-8")
+            with patch("scripts.build_archive.ARTICLES_DIR", articles_dir):
+                write_article_pages([item])
+                self.assertTrue((articles_dir / "44" / "index.html").is_file())
+                write_article_pages([])
+                self.assertFalse((articles_dir / "44").exists())
+                self.assertTrue((notes_dir / "keep.txt").is_file())
+
+    def test_sitemap_is_valid_xml_and_contains_standalone_article_urls(self):
+        item = build_item(issue(article_body(), number=45))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch("scripts.build_archive.ROOT", Path(temp_dir)):
+                write_sitemap([item])
+            sitemap_path = Path(temp_dir) / "sitemap.xml"
+            root = ET.parse(sitemap_path).getroot()
+            namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+            locations = [node.text for node in root.findall("sm:url/sm:loc", namespace)]
+            self.assertIn("https://ahmad-sadek.github.io/", locations)
+            self.assertIn("https://ahmad-sadek.github.io/articles/45/", locations)
 
     def test_archive_is_sorted_newest_first_and_only_contains_approved_content(self):
         older = issue(article_body(), number=1)
