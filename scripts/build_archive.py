@@ -419,6 +419,188 @@ def json_for_script(value: Any) -> str:
     )
 
 
+def safe_markdown_url(raw_url: str, kind: str = "link") -> str:
+    candidate = str(raw_url or "").strip().replace("&amp;", "&")
+    absolute = allowed_url(candidate)
+    if absolute:
+        parsed = urllib.parse.urlparse(absolute)
+        if kind == "image" and parsed.scheme != "https":
+            return ""
+        return absolute
+    if re.search(r"[\x00-\x20\x7f]", candidate):
+        return ""
+    if re.match(r"^(?:/(?!/)|\.{1,2}/|#)", candidate):
+        return candidate
+    if kind == "link" and re.match(r"^(?:mailto:|tel:)", candidate, re.I):
+        return candidate
+    return ""
+
+
+def markdown_inline_static(source: str) -> str:
+    """Render inline Markdown while escaping all raw HTML and validating URLs."""
+    tokens: list[str] = []
+
+    def stash(fragment: str) -> str:
+        marker = f"\x00M{len(tokens)}\x00"
+        tokens.append(fragment)
+        return marker
+
+    text = str(source or "")
+    tick = re.escape(chr(96))
+    text = re.sub(tick + r"([^" + tick + r"\n]+)" + tick,
+                  lambda match: stash("<code>" + html_escape(match.group(1)) + "</code>"), text)
+
+    def image_replacement(match: re.Match[str]) -> str:
+        alt, raw_url = match.group(1), match.group(2)
+        url = safe_markdown_url(raw_url, "image")
+        if not url:
+            return html_escape(match.group(0))
+        return stash('<img src="' + html_escape(url, quote=True) + '" alt="' +
+                     html_escape(alt, quote=True) + '" loading="lazy" decoding="async">')
+
+    text = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", image_replacement, text)
+
+    def link_replacement(match: re.Match[str]) -> str:
+        label, raw_url = match.group(1), match.group(2)
+        url = safe_markdown_url(raw_url, "link")
+        if not url:
+            return html_escape(match.group(0))
+        external = bool(re.match(r"^https?://", url, re.I))
+        attrs = ' href="' + html_escape(url, quote=True) + '"'
+        if external:
+            attrs += ' target="_blank" rel="noopener noreferrer"'
+        return stash("<a" + attrs + ">" + html_escape(label) + "</a>")
+
+    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link_replacement, text)
+    text = html_escape(text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"__(.+?)__", r"<strong>\1</strong>", text)
+    text = re.sub(r"(^|[^*])\*([^*\n]+)\*(?!\*)", r"\1<em>\2</em>", text)
+    text = re.sub(r"(^|[^_])_([^_\n]+)_(?!_)", r"\1<em>\2</em>", text)
+    text = re.sub(r"~~(.+?)~~", r"<del>\1</del>", text)
+    text = text.replace("\n", "<br>")
+    return re.sub(r"\x00M(\d+)\x00", lambda match: tokens[int(match.group(1))], text)
+
+
+def render_markdown_static(source: str) -> str:
+    """Small server-side Markdown renderer for first paint and search crawlers."""
+    lines = str(source or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    output: list[str] = []
+    index = 0
+
+    def is_heading(line: str) -> bool:
+        return bool(re.match(r"^\s{0,3}#{1,6}\s+", line))
+
+    def is_fence(line: str) -> bool:
+        return bool(re.match(r"^\s*\x60{3}", line))
+
+    def is_rule(line: str) -> bool:
+        return bool(re.match(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$", line))
+
+    def is_quote(line: str) -> bool:
+        return bool(re.match(r"^\s*>\s?", line))
+
+    def is_unordered(line: str) -> bool:
+        return bool(re.match(r"^\s*[-*+]\s+", line))
+
+    def is_ordered(line: str) -> bool:
+        return bool(re.match(r"^\s*\d+[.)]\s+", line))
+
+    def table_cells(line: str) -> list[str]:
+        return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+    def table_divider(line: str) -> bool:
+        cells = table_cells(line)
+        return bool(cells) and all(re.match(r"^\s*:?-{3,}:?\s*$", cell) for cell in cells)
+
+    while index < len(lines):
+        line = lines[index]
+        if not line.strip():
+            index += 1
+            continue
+
+        if is_fence(line):
+            language = re.sub(r"[^a-zA-Z0-9_-]", "", line.strip()[3:].strip())
+            index += 1
+            code_lines = []
+            while index < len(lines) and not is_fence(lines[index]):
+                code_lines.append(lines[index])
+                index += 1
+            if index < len(lines):
+                index += 1
+            class_attr = ' class="language-' + language + '"' if language else ""
+            output.append("<pre><code" + class_attr + ">" +
+                          html_escape("\n".join(code_lines)) + "</code></pre>")
+            continue
+
+        if is_rule(line):
+            output.append("<hr>")
+            index += 1
+            continue
+
+        heading = re.match(r"^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$", line)
+        if heading:
+            level = min(4, max(2, len(heading.group(1)) + 1))
+            output.append(f"<h{level}>" + markdown_inline_static(heading.group(2)) + f"</h{level}>")
+            index += 1
+            continue
+
+        if is_quote(line):
+            quote = []
+            while index < len(lines) and is_quote(lines[index]):
+                quote.append(re.sub(r"^\s*>\s?", "", lines[index]))
+                index += 1
+            output.append("<blockquote><p>" + markdown_inline_static("\n".join(quote)) + "</p></blockquote>")
+            continue
+
+        if (is_unordered(line) or is_ordered(line)) and not (
+            index + 1 < len(lines) and table_divider(lines[index + 1])
+        ):
+            ordered = is_ordered(line)
+            tag = "ol" if ordered else "ul"
+            items = []
+            pattern = r"^\s*\d+[.)]\s+" if ordered else r"^\s*[-*+]\s+"
+            while index < len(lines) and (is_ordered(lines[index]) if ordered else is_unordered(lines[index])):
+                raw_item = re.sub(pattern, "", lines[index])
+                items.append("<li>" + markdown_inline_static(raw_item) + "</li>")
+                index += 1
+            output.append("<" + tag + ">" + "".join(items) + "</" + tag + ">")
+            continue
+
+        if index + 1 < len(lines) and "|" in line and table_divider(lines[index + 1]):
+            headers = table_cells(line)
+            index += 2
+            rows = []
+            while index < len(lines) and "|" in lines[index] and lines[index].strip():
+                rows.append(table_cells(lines[index]))
+                index += 1
+            ths = "".join("<th scope=\"col\">" + markdown_inline_static(value) + "</th>" for value in headers)
+            rendered_rows = []
+            for row in rows:
+                cells = "".join("<td>" + markdown_inline_static(row[col] if col < len(row) else "") +
+                                "</td>" for col in range(len(headers)))
+                rendered_rows.append("<tr>" + cells + "</tr>")
+            output.append('<div class="table-scroll"><table><thead><tr>' + ths +
+                          "</tr></thead><tbody>" + "".join(rendered_rows) +
+                          "</tbody></table></div>")
+            continue
+
+        paragraph = [line]
+        index += 1
+        while index < len(lines) and lines[index].strip():
+            following = lines[index]
+            if (is_fence(following) or is_heading(following) or is_rule(following) or
+                is_quote(following) or is_unordered(following) or is_ordered(following)):
+                break
+            if index + 1 < len(lines) and "|" in following and table_divider(lines[index + 1]):
+                break
+            paragraph.append(following)
+            index += 1
+        output.append("<p>" + markdown_inline_static("\n".join(paragraph)) + "</p>")
+
+    return "\n".join(output)
+
+
 def build_article_page(item: dict[str, Any]) -> str:
     """Create a crawlable standalone page with unique metadata and safe JSON data."""
     article_id = int(item["id"])
