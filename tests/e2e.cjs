@@ -81,6 +81,11 @@ async function main() {
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
     await arabic.close();
 
+    const sourceLink = page.locator('.site-footer .source-link');
+    assert.equal(await sourceLink.getAttribute('href'), 'https://github.com/AHMAD-SADEK/AHMAD-SADEK.github.io', 'the source link should live in the footer');
+    assert.equal(await sourceLink.innerText(), 'Open source', 'the English footer label should be discreet');
+    await page.locator('[data-lang="ar"]').click();
+    assert.equal(await sourceLink.innerText(), 'مفتوح المصدر', 'the footer label should be translated into Arabic');
     assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
     console.log("Browser regression tests passed: archive, article, language direction, Arabic SEO landing page, search, filtering, and mobile navigation.");
     await mobile.close();
