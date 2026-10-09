@@ -2,6 +2,11 @@ name: Idea / فكرة
 description: Publish a short idea, question, observation, or note
 title: "[Idea] "
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **تنبيه مهم / Important:** المسودة لا تظهر في الأرشيف، لكن قضية GitHub نفسها عامة ويمكن للآخرين قراءتها. لا تضع كلمات مرور أو معلومات خاصة أو محتوى غير جاهز للنشر هنا.
+
   - type: dropdown
     id: content_type
     attributes:
