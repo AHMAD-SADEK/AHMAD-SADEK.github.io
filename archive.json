@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": 3,
+      "title": "The Discipline of Curiosity",
+      "subtitle": "On learning, attention, and the art of asking better questions.",
+      "type": "writing",
+      "category": "thought",
+      "language": "English / English",
+      "author": "Ahmad Sadek",
+      "date": "2026-10-08",
+      "readingTime": "3 min",
+      "tags": [
+        "curiosity",
+        "learning",
+        "philosophy",
+        "reflection"
+      ],
+      "coverImage": "",
+      "abstract": "Curiosity is not merely the desire to know more. It is a discipline of attention: the willingness to remain with a question long enough for it to change the way we see the world.",
+      "contentMarkdown": "## Curiosity as a discipline\n\nCuriosity often begins with a small discomfort: the feeling that something has not yet been understood.\n\nA disciplined mind does not rush to eliminate that discomfort. It stays with the question.\n\n## Learning beyond one field\n\nKnowledge becomes more interesting when different disciplines begin to speak to one another.\n\nPharmacy can lead to chemistry. Chemistry can lead to engineering. Engineering can lead to philosophy. Philosophy can return us to the original question with better tools.\n\n## The value of asking\n\nPerhaps the real measure of learning is not how many answers we collect, but how much better our questions become.\n\nThe archive begins here: with questions worth keeping.",
+      "secondLanguage": "",
+      "referencesMarkdown": "",
+      "attachments": [],
+      "links": [],
+      "projectStatus": "",
+      "technologies": [],
+      "sourceUrl": "https://github.com/AHMAD-SADEK/AHMAD-SADEK.github.io/issues/3"
+    }
+  ]
+}
