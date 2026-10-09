@@ -243,7 +243,7 @@ def parse_date(raw: str, created_at: str) -> str:
 
 def allowed_url(value: str) -> str:
     value = value.strip().strip("<>")
-    if not value or re.search(r"[\\x00-\\x20\\x7f]", value):
+    if not value or re.search(r"[\x00-\x20\x7f]", value):
         return ""
     try:
         parsed = urllib.parse.urlparse(value)
@@ -260,12 +260,12 @@ def allowed_url(value: str) -> str:
 
 def image_url(raw: str) -> str:
     value = (raw or "").strip()
-    match = re.search(r"<img\\b[^>]*\\bsrc\\s*=\\s*([\"'])(.*?)\\1", value, re.I | re.S)
+    match = re.search(r"<img\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1", value, re.I | re.S)
     candidate = match.group(2).strip() if match else ""
     if not candidate:
-        match = re.search(r"!\\[[^\\]]*\\]\\((https?://[^)\\s]+)\\)", value, re.I)
+        match = re.search(r"!\[[^\]]*\]\((https?://[^)\s]+)\)", value, re.I)
         candidate = match.group(1) if match else ""
-    if not candidate and re.fullmatch(r"https?://[^\\s<>]+", value, re.I):
+    if not candidate and re.fullmatch(r"https?://[^\s<>]+", value, re.I):
         # A cover field containing a single URL is intentional; do not promote an
         # unrelated URL pasted into explanatory prose into a tracking image.
         candidate = value
