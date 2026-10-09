@@ -271,6 +271,14 @@
   function typeLabel(type) { return I18N[currentLanguage].types[type] || I18N[currentLanguage].types.other; }
   function categoryLabel(category) { return I18N[currentLanguage].categories[category] || ""; }
 
+  function primaryLanguageFor(item) {
+    if (item && (item.primaryLanguage === "ar" || item.primaryLanguage === "en")) return item.primaryLanguage;
+    const choice = String(item?.language || "");
+    if (/arabic|العربية/i.test(choice) && !/bilingual|ثنائية اللغة/i.test(choice)) return "ar";
+    if (/english/i.test(choice) && !/bilingual/i.test(choice)) return "en";
+    return /[\u0600-\u06FF]/.test(item?.contentMarkdown || "") ? "ar" : "en";
+  }
+
   function displayDate(value) {
     if (!value) return "";
     const match = String(value).match(/^\d{4}-\d{2}-\d{2}$/);
@@ -517,8 +525,10 @@
     safeText(type, typeLabel(item.type) + (categoryLabel(item.category) ? " · " + categoryLabel(item.category) : ""));
     host.appendChild(type);
 
+    const articlePrimaryLanguage = primaryLanguageFor(item);
     const heading = document.createElement("h1");
     heading.id = "articleTitle";
+    heading.dir = articlePrimaryLanguage;
     safeText(heading, item.title);
     host.setAttribute("aria-labelledby", "articleTitle");
     host.appendChild(heading);
@@ -526,6 +536,7 @@
     if (item.subtitle) {
       const subtitle = document.createElement("p");
       subtitle.className = "article-subtitle";
+      subtitle.dir = articlePrimaryLanguage;
       safeText(subtitle, item.subtitle);
       host.appendChild(subtitle);
     }
@@ -549,13 +560,7 @@
       host.appendChild(cover);
     }
 
-    const guessedPrimary = /[\u0600-\u06FF]/.test(item.contentMarkdown || "") ? "ar" : "en";
-    const languageChoice = String(item.language || "");
-    const primaryLanguage = item.primaryLanguage || (
-      /arabic|العربية/i.test(languageChoice) && !/bilingual|ثنائية اللغة/i.test(languageChoice)
-        ? "ar"
-        : (/english/i.test(languageChoice) && !/bilingual/i.test(languageChoice) ? "en" : guessedPrimary)
-    );
+    const primaryLanguage = articlePrimaryLanguage;
     const hasTranslation = Boolean(String(item.secondLanguage || "").trim());
     const showingTranslation = hasTranslation && currentLanguage !== primaryLanguage;
     const body = showingTranslation ? item.secondLanguage : item.contentMarkdown;
