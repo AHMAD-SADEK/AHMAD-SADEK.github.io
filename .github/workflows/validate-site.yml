@@ -34,4 +34,5 @@ jobs:
         run: |
           node --check assets/js/markdown.js
           node --check assets/js/app.js
+          node --check assets/js/article.js
           node tests/test_markdown.js
