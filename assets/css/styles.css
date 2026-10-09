@@ -272,3 +272,8 @@ a.feature { display: block; }
 .feature-grid.double { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .table-scroll { max-width: 100%; overflow-x: auto; }
 @media (max-width: 880px) { .feature-grid.double { grid-template-columns: 1fr; } }
+
+
+/* Article copy follows its own language even when the surrounding interface is translated. */
+.article-page h1[dir="ltr"], .article-subtitle[dir="ltr"], .article-prose[dir="ltr"] { direction: ltr; text-align: left; }
+.article-page h1[dir="rtl"], .article-subtitle[dir="rtl"], .article-prose[dir="rtl"] { direction: rtl; text-align: right; }
