@@ -3,6 +3,8 @@ name: Build approved archive
 on:
   issues:
     types: [opened, edited, closed, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event.issue.user.login == 'AHMAD-SADEK'
+    if: github.event_name != 'issues' || github.event.issue.user.login == 'AHMAD-SADEK'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
