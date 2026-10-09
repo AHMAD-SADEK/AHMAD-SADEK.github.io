@@ -269,7 +269,9 @@ def image_url(raw: str) -> str:
         # A cover field containing a single URL is intentional; do not promote an
         # unrelated URL pasted into explanatory prose into a tracking image.
         candidate = value
-    return allowed_url(candidate) if candidate else ""
+    valid = allowed_url(candidate) if candidate else ""
+    # Covers are embedded media: require HTTPS to prevent mixed-content failures.
+    return valid if valid and urllib.parse.urlparse(valid).scheme == "https" else ""
 
 def extract_links(raw: str) -> list[dict[str, str]]:
     found: list[dict[str, str]] = []
