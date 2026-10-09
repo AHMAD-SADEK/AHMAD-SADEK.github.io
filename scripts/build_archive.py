@@ -10,7 +10,10 @@ import json
 import math
 import os
 import re
+import shutil
 import sys
+from html import escape as html_escape
+from xml.sax.saxutils import escape as xml_escape
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -20,6 +23,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "archive.json"
+ARTICLES_DIR = ROOT / "articles"
+SITE_URL = "https://ahmad-sadek.github.io"
 OWNER_LOGIN = "AHMAD-SADEK"
 
 SCHEMAS: dict[str, list[str]] = {
@@ -397,11 +402,169 @@ def build_archive(issues: list[dict[str, Any]]) -> dict[str, Any]:
     return {"version": 1, "items": items}
 
 
+def json_for_script(value: Any) -> str:
+    """Serialize JSON safely inside an HTML script element."""
+    return (
+        json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
+
+
+def build_article_page(item: dict[str, Any]) -> str:
+    """Create a crawlable standalone page with unique metadata and safe JSON data."""
+    article_id = int(item["id"])
+    canonical = f"{SITE_URL}/articles/{article_id}/"
+    title = str(item.get("title") or "Untitled")
+    description = str(item.get("subtitle") or item.get("abstract") or title).strip()
+    if len(description) > 300:
+        description = description[:297].rstrip() + "..."
+    primary = item.get("primaryLanguage") if item.get("primaryLanguage") in {"ar", "en"} else "en"
+    direction = "rtl" if primary == "ar" else "ltr"
+    cover = allowed_url(str(item.get("coverImage") or ""))
+    title_attr = html_escape(title, quote=True)
+    description_attr = html_escape(description, quote=True)
+    canonical_attr = html_escape(canonical, quote=True)
+    cover_meta = (
+        '<meta property="og:image" content="' + html_escape(cover, quote=True) + '">\\n'
+        if cover else ""
+    )
+    data_json = json_for_script(item)
+    return f\'''<!doctype html>
+<html lang="{primary}" dir="{direction}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ed">
+  <meta name="description" content="{description_attr}">
+  <meta name="author" content="{html_escape(str(item.get("author") or OWNER_LOGIN), quote=True)}">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="{canonical_attr}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Ahmad Sadek — Personal Archive">
+  <meta property="og:title" content="{title_attr} — Ahmad Sadek">
+  <meta property="og:description" content="{description_attr}">
+  <meta property="og:url" content="{canonical_attr}">
+  {cover_meta.strip()}
+  <meta name="twitter:card" content="summary">
+  <title>{title_attr} — Ahmad Sadek</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Cormorant+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=Noto+Kufi+Arabic:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="application/ld+json">{json_for_script({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": description,
+        "author": {"@type": "Person", "name": str(item.get("author") or OWNER_LOGIN)},
+        "datePublished": str(item.get("date") or ""),
+        "url": canonical,
+        **({"image": cover} if cover else {})
+    })}</script>
+  <script src="/assets/js/markdown.js" defer></script>
+  <script src="/assets/js/article.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a href="/#home" class="brand" aria-label="Ahmad Sadek home">
+        <span class="monogram">AS</span>
+        <span class="brand-name" data-ui="brand">AHMAD SADEK</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Article navigation">
+        <a class="nav-link" href="/#archive" data-ui="archive">Archive</a>
+        <a class="nav-link" href="/#about" data-ui="about">About</a>
+      </nav>
+      <div class="header-tools">
+        <button class="language-button" type="button" data-lang="ar" aria-pressed="false" aria-label="Switch interface to Arabic">العربية</button>
+        <span class="language-divider" aria-hidden="true">/</span>
+        <button class="language-button" type="button" data-lang="en" aria-pressed="true" aria-label="Switch interface to English">EN</button>
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <article class="article-page" id="articlePage" aria-labelledby="articleTitle">
+        <a class="article-back" href="/#archive" data-ui="back">← Back to archive</a>
+        <div class="article-type" id="articleType"></div>
+        <h1 id="articleTitle" lang="{primary}" dir="{direction}">{title_attr}</h1>
+        <p class="article-subtitle" id="articleSubtitle" lang="{primary}" dir="{direction}">{html_escape(str(item.get("subtitle") or ""), quote=True)}</p>
+        <div class="article-meta" id="articleMeta"></div>
+        <img class="article-cover" id="articleCover" alt="{title_attr}" hidden>
+        <section class="article-prose" id="articleAbstract" hidden>
+          <h2 id="abstractLabel">Abstract</h2>
+          <div id="abstractContent" lang="{primary}" dir="{direction}"></div>
+        </section>
+        <section class="article-prose" id="articleBody" aria-label="Article content">
+          <div id="articleContent" lang="{primary}" dir="{direction}"><p class="status-message">Loading article content…</p></div>
+        </section>
+        <section class="article-prose" id="articleReferences" hidden>
+          <h2 id="referencesLabel">References</h2>
+          <div id="referencesContent" lang="{primary}" dir="{direction}"></div>
+        </section>
+        <section class="article-prose" id="articleAttachments" hidden>
+          <h2 id="attachmentsLabel">Attached files</h2>
+          <div id="attachmentsContent"></div>
+        </section>
+        <section class="article-prose" id="articleLinks" hidden>
+          <h2 id="linksLabel">Related links</h2>
+          <div id="linksContent"></div>
+        </section>
+        <p class="article-source" id="articleSource"></p>
+        <script id="articleData" type="application/json">{data_json}</script>
+        <noscript>
+          <section class="article-prose">
+            <p>JavaScript is disabled. The original Markdown content is shown below.</p>
+            <pre>{html_escape(str(item.get("contentMarkdown") or ""))}</pre>
+          </section>
+        </noscript>
+      </article>
+    </main>
+    <footer class="site-footer"><span>© {html_escape(str(item.get("date") or "")[:4])} Ahmad Sadek</span><span data-ui="footer">AHMAD SADEK — PERSONAL ARCHIVE</span></footer>
+  </div>
+</body>
+</html>
+\'''
+
+
+def write_article_pages(items: list[dict[str, Any]]) -> None:
+    ARTICLES_DIR.mkdir(parents=True, exist_ok=True)
+    wanted = {str(int(item["id"])) for item in items}
+    # Only delete numeric directories generated by this script; leave other site files alone.
+    for child in ARTICLES_DIR.iterdir():
+        if child.is_dir() and child.name.isdigit() and child.name not in wanted:
+            shutil.rmtree(child)
+    for item in items:
+        article_dir = ARTICLES_DIR / str(int(item["id"]))
+        article_dir.mkdir(parents=True, exist_ok=True)
+        (article_dir / "index.html").write_text(build_article_page(item), encoding="utf-8")
+
+
+def write_sitemap(items: list[dict[str, Any]]) -> None:
+    urls = [f"<url><loc>{xml_escape(SITE_URL)}/</loc></url>"]
+    for item in items:
+        article_id = int(item["id"])
+        loc = xml_escape(f"{SITE_URL}/articles/{article_id}/")
+        lastmod = xml_escape(str(item.get("date") or ""))
+        if re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", lastmod):
+            urls.append(f"<url><loc>{loc}</loc><lastmod>{lastmod}</lastmod></url>")
+        else:
+            urls.append(f"<url><loc>{loc}</loc></url>")
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n'
+    xml += "\\n".join("  " + url for url in urls)
+    xml += "\\n</urlset>\\n"
+    (ROOT / "sitemap.xml").write_text(xml, encoding="utf-8")
+
+
 def main() -> int:
     data = build_archive(fetch_issues())
-    serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
+    serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\\n"
     OUTPUT.write_text(serialized, encoding="utf-8")
-    print(f"Wrote {len(data['items'])} approved publication(s) to {OUTPUT.relative_to(ROOT)}.")
+    write_article_pages(data["items"])
+    write_sitemap(data["items"])
+    print(f"Wrote {len(data['items'])} approved publication(s), article pages, and sitemap.")
     return 0
 
 
