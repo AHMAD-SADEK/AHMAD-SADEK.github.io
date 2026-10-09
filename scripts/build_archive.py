@@ -427,11 +427,11 @@ def build_article_page(item: dict[str, Any]) -> str:
     description_attr = html_escape(description, quote=True)
     canonical_attr = html_escape(canonical, quote=True)
     cover_meta = (
-        '<meta property="og:image" content="' + html_escape(cover, quote=True) + '">\\n'
+        '<meta property="og:image" content="' + html_escape(cover, quote=True) + '">\n'
         if cover else ""
     )
     data_json = json_for_script(item)
-    return f\'''<!doctype html>
+    return f'''<!doctype html>
 <html lang="{primary}" dir="{direction}">
 <head>
   <meta charset="utf-8">
@@ -525,7 +525,7 @@ def build_article_page(item: dict[str, Any]) -> str:
   </div>
 </body>
 </html>
-\'''
+'''
 
 
 def write_article_pages(items: list[dict[str, Any]]) -> None:
@@ -547,20 +547,20 @@ def write_sitemap(items: list[dict[str, Any]]) -> None:
         article_id = int(item["id"])
         loc = xml_escape(f"{SITE_URL}/articles/{article_id}/")
         lastmod = xml_escape(str(item.get("date") or ""))
-        if re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", lastmod):
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", lastmod):
             urls.append(f"<url><loc>{loc}</loc><lastmod>{lastmod}</lastmod></url>")
         else:
             urls.append(f"<url><loc>{loc}</loc></url>")
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\\n'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n'
-    xml += "\\n".join("  " + url for url in urls)
-    xml += "\\n</urlset>\\n"
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml += "\n".join("  " + url for url in urls)
+    xml += "\n</urlset>\n"
     (ROOT / "sitemap.xml").write_text(xml, encoding="utf-8")
 
 
 def main() -> int:
     data = build_archive(fetch_issues())
-    serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\\n"
+    serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
     OUTPUT.write_text(serialized, encoding="utf-8")
     write_article_pages(data["items"])
     write_sitemap(data["items"])
