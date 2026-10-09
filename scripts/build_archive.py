@@ -620,6 +620,11 @@ def build_article_page(item: dict[str, Any]) -> str:
         if cover else ""
     )
     data_json = json_for_script(item)
+    abstract_html = render_markdown_static(str(item.get("abstract") or ""))
+    content_html = render_markdown_static(str(item.get("contentMarkdown") or ""))
+    references_html = render_markdown_static(str(item.get("referencesMarkdown") or ""))
+    abstract_hidden = "" if item.get("abstract") else " hidden"
+    references_hidden = "" if item.get("referencesMarkdown") else " hidden"
     return f'''<!doctype html>
 <html lang="{primary}" dir="{direction}">
 <head>
@@ -681,16 +686,16 @@ def build_article_page(item: dict[str, Any]) -> str:
         <p class="article-subtitle" id="articleSubtitle" lang="{primary}" dir="{direction}">{html_escape(str(item.get("subtitle") or ""), quote=True)}</p>
         <div class="article-meta" id="articleMeta"></div>
         <img class="article-cover" id="articleCover" alt="{title_attr}" hidden>
-        <section class="article-prose" id="articleAbstract" hidden>
+        <section class="article-prose" id="articleAbstract"{abstract_hidden}>
           <h2 id="abstractLabel">Abstract</h2>
-          <div id="abstractContent" lang="{primary}" dir="{direction}"></div>
+          <div id="abstractContent" lang="{primary}" dir="{direction}">{abstract_html}</div>
         </section>
         <section class="article-prose" id="articleBody" aria-label="Article content">
-          <div id="articleContent" lang="{primary}" dir="{direction}"><p class="status-message">Loading article content…</p></div>
+          <div id="articleContent" lang="{primary}" dir="{direction}">{content_html}</div>
         </section>
-        <section class="article-prose" id="articleReferences" hidden>
+        <section class="article-prose" id="articleReferences"{references_hidden}>
           <h2 id="referencesLabel">References</h2>
-          <div id="referencesContent" lang="{primary}" dir="{direction}"></div>
+          <div id="referencesContent" lang="{primary}" dir="{direction}">{references_html}</div>
         </section>
         <section class="article-prose" id="articleAttachments" hidden>
           <h2 id="attachmentsLabel">Attached files</h2>
@@ -702,12 +707,6 @@ def build_article_page(item: dict[str, Any]) -> str:
         </section>
         <p class="article-source" id="articleSource"></p>
         <script id="articleData" type="application/json">{data_json}</script>
-        <noscript>
-          <section class="article-prose">
-            <p>JavaScript is disabled. The original Markdown content is shown below.</p>
-            <pre>{html_escape(str(item.get("contentMarkdown") or ""))}</pre>
-          </section>
-        </noscript>
       </article>
     </main>
     <footer class="site-footer"><span>© {html_escape(str(item.get("date") or "")[:4])} Ahmad Sadek</span><span data-ui="footer">AHMAD SADEK — PERSONAL ARCHIVE</span></footer>
