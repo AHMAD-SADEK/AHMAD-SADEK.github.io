@@ -32,14 +32,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python scripts/build_archive.py
-      - name: Commit only changed archive data
+      - name: Commit changed archive data (retry concurrent updates)
         run: |
-          if git diff --quiet -- archive.json; then
-            echo "Archive is already up to date."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add archive.json
-          git commit -m "chore: update approved archive data"
-          git push
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python scripts/build_archive.py
+            if git diff --quiet -- archive.json; then
+              echo "Archive is already up to date."
+              exit 0
+            fi
+            git add archive.json
+            git commit -m "chore: update approved archive data"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Concurrent update detected on attempt $attempt; retrying."
+            sleep "$attempt"
+          done
+          echo "Could not update archive after three attempts." >&2
+          exit 1
