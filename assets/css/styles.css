@@ -190,9 +190,21 @@ a.feature { display: block; }
 [dir="rtl"] .brand { direction: rtl; }
 [dir="rtl"] .hero-grid, [dir="rtl"] .split, [dir="rtl"] .library-grid, [dir="rtl"] .contact-grid { direction: rtl; }
 /* The Arabic headline needs tighter leading and optical centering against the intro. */
-[dir="rtl"] .hero-grid { align-items: center; }
-/* Keep the Arabic name as one compact typographic unit, closer in height to the intro copy. */
-[dir="rtl"] .hero h1 { font: 700 clamp(76px, 9.4vw, 128px)/.98 var(--arabic); letter-spacing: 0; }
+[dir="rtl"] .hero-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(30px, 5vw, 68px);
+}
+/* Arabic word shapes need a horizontal composition rather than the English line break. */
+[dir="rtl"] .hero h1.arabic-home-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .12em;
+  white-space: nowrap;
+  font: 700 clamp(68px, 8vw, 118px)/1.25 var(--arabic);
+  letter-spacing: 0;
+}
 [dir="rtl"] .hero-lead { font: 400 clamp(28px, 3vw, 39px)/1.45 var(--arabic); }
 [dir="rtl"] .hero-meta { font-size: 12px; line-height: 1.9; }
 [dir="rtl"] .lead-text { font: 400 clamp(35px, 4.4vw, 60px)/1.42 var(--arabic); letter-spacing: 0; }
@@ -248,8 +260,15 @@ a.feature { display: block; }
   .article-prose h3 { font-size: 27px; }
   .article-prose table { display: block; overflow-x: auto; }
   .site-footer { flex-direction: column; gap: 8px; }
-  [dir="rtl"] .hero-grid { align-items: stretch; }
-  [dir="rtl"] .hero h1 { font-size: clamp(66px, 17vw, 100px); line-height: 1.02; }
+  [dir="rtl"] .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 30px;
+  }
+  [dir="rtl"] .hero h1.arabic-home-title {
+    font-size: clamp(62px, 16vw, 82px);
+    line-height: 1.25;
+  }
   [dir="rtl"] .lead-text { font-size: clamp(31px, 9vw, 52px); }
   [dir="rtl"] .page-hero h1 { font-size: clamp(53px, 15vw, 98px); line-height: 1.22; }
   [dir="rtl"] .article-page h1 { font-size: clamp(46px, 13vw, 78px); }
