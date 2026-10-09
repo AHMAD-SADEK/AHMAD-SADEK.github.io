@@ -243,26 +243,33 @@ def parse_date(raw: str, created_at: str) -> str:
 
 def allowed_url(value: str) -> str:
     value = value.strip().strip("<>")
+    if not value or re.search(r"[\\x00-\\x20\\x7f]", value):
+        return ""
     try:
         parsed = urllib.parse.urlparse(value)
-        if parsed.scheme in {"https", "http"} and parsed.netloc:
-            return value
+        if parsed.scheme not in {"https", "http"} or not parsed.hostname:
+            return ""
+        if parsed.username is not None or parsed.password is not None:
+            return ""
+        # Accessing .port validates a supplied port and raises on malformed values.
+        _ = parsed.port
+        return value
     except ValueError:
-        pass
-    return ""
+        return ""
 
 
 def image_url(raw: str) -> str:
-    match = re.search(r"<img\b[^>]*\bsrc\s*=\s*([\"'])(.*?)\1", raw, re.I | re.S)
-    candidate = match.group(2) if match else ""
+    value = (raw or "").strip()
+    match = re.search(r"<img\\b[^>]*\\bsrc\\s*=\\s*([\"'])(.*?)\\1", value, re.I | re.S)
+    candidate = match.group(2).strip() if match else ""
     if not candidate:
-        match = re.search(r"!\[[^\]]*\]\((https?://[^)\s]+)\)", raw, re.I)
+        match = re.search(r"!\\[[^\\]]*\\]\\((https?://[^)\\s]+)\\)", value, re.I)
         candidate = match.group(1) if match else ""
-    if not candidate:
-        match = URL_RE.search(raw)
-        candidate = match.group(0) if match else ""
+    if not candidate and re.fullmatch(r"https?://[^\\s<>]+", value, re.I):
+        # A cover field containing a single URL is intentional; do not promote an
+        # unrelated URL pasted into explanatory prose into a tracking image.
+        candidate = value
     return allowed_url(candidate) if candidate else ""
-
 
 def extract_links(raw: str) -> list[dict[str, str]]:
     found: list[dict[str, str]] = []
