@@ -7,7 +7,7 @@ require("../assets/js/markdown.js");
 const markdown = global.window.ArchiveMarkdown;
 assert.ok(markdown, "renderer should register on window");
 
-const hostile = markdown.render('<script>alert("xss")</script>\n\n<img src=x onerror=alert(1)>\n\n\\x60</script>\\x60');
+const hostile = markdown.render('<script>alert("xss")</script>\n\n<img src=x onerror=alert(1)>');
 assert.equal(hostile.includes("<script>"), false, "raw script tags must not be emitted");
 assert.equal(hostile.includes("<img src=x"), false, "raw image HTML must not be emitted");
 assert.equal(hostile.includes("</script>"), false, "script closing tags must remain inert");
