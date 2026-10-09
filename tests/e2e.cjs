@@ -70,7 +70,9 @@ async function main() {
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "the Arabic landing URL should declare Arabic");
     assert.equal(await arabic.locator("html").getAttribute("dir"), "rtl", "the Arabic landing URL should use RTL direction");
     assert.equal(await arabic.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/ar/");
-    assert.match(await arabic.locator("#homeTitle").innerText(), /أحمد\s+صادق/);
+    assert.equal(await arabic.locator("#homeTitle").getAttribute("aria-label"), "أحمد صادق");
+    assert.equal(await arabic.locator("#homeTitle .first-name").innerText(), "أحمد");
+    assert.equal(await arabic.locator("#homeTitle .last-name").innerText(), "صادق");
     assert.doesNotMatch(await arabic.locator("#homeTitle").innerText(), /صادق\./, "the Arabic name should not carry an awkward trailing Latin period");
     assert.match(await arabic.locator("#featuredList").innerText(), /The Discipline of Curiosity/);
     await arabic.locator('[data-lang="en"]').click();
@@ -83,28 +85,39 @@ async function main() {
     await arabic.setViewportSize({ width: 1365, height: 900 });
     const desktopHero = await arabic.locator("#homeTitle").evaluate((el) => {
       const titleStyle = getComputedStyle(el);
+      const gridStyle = getComputedStyle(el.closest(".hero-grid"));
+      const spans = [...el.querySelectorAll("span")];
       return {
-        lineHeightRatio: parseFloat(titleStyle.lineHeight) / parseFloat(titleStyle.fontSize),
-        gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
+        display: titleStyle.display,
+        whiteSpace: titleStyle.whiteSpace,
+        gridAlignment: gridStyle.alignItems,
+        columnCount: gridStyle.gridTemplateColumns.trim().split(/\\s+/).length,
+        fits: el.scrollWidth <= el.clientWidth,
+        spanTopDifference: Math.abs(spans[0].getBoundingClientRect().top - spans[1].getBoundingClientRect().top)
       };
     });
-    assert.ok(desktopHero.lineHeightRatio >= 0.96 && desktopHero.lineHeightRatio <= 1.00,
-      "the Arabic name should use a compact, readable line height on desktop");
-    assert.equal(desktopHero.gridAlignment, "center",
-      "the Arabic name and introduction should align around a shared visual center");
+    assert.equal(desktopHero.display, "flex", "the Arabic name should be composed horizontally");
+    assert.equal(desktopHero.whiteSpace, "nowrap", "the Arabic name should stay on one line");
+    assert.equal(desktopHero.columnCount, 2, "the desktop Arabic hero should balance name and intro in two columns");
+    assert.equal(desktopHero.gridAlignment, "center", "the name and intro should share a visual center");
+    assert.equal(desktopHero.fits, true, "the one-line Arabic name should fit its desktop column");
+    assert.ok(desktopHero.spanTopDifference < 2, "both parts of the Arabic name should sit on the same line");
 
     await arabic.setViewportSize({ width: 375, height: 812 });
     const mobileHero = await arabic.locator("#homeTitle").evaluate((el) => {
       const titleStyle = getComputedStyle(el);
+      const gridStyle = getComputedStyle(el.closest(".hero-grid"));
       return {
-        lineHeightRatio: parseFloat(titleStyle.lineHeight) / parseFloat(titleStyle.fontSize),
-        gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
+        display: titleStyle.display,
+        whiteSpace: titleStyle.whiteSpace,
+        columnCount: gridStyle.gridTemplateColumns.trim().split(/\\s+/).length,
+        fits: el.scrollWidth <= el.clientWidth
       };
     });
-    assert.ok(mobileHero.lineHeightRatio >= 1.00 && mobileHero.lineHeightRatio <= 1.04,
-      "the Arabic name should keep a compact line height on mobile");
-    assert.equal(mobileHero.gridAlignment, "stretch",
-      "mobile Arabic hero content should preserve the full-width stacked layout");
+    assert.equal(mobileHero.display, "flex", "the Arabic name should remain composed horizontally on mobile");
+    assert.equal(mobileHero.whiteSpace, "nowrap", "the Arabic name should not wrap on mobile");
+    assert.equal(mobileHero.columnCount, 1, "mobile hero content should be stacked in one column");
+    assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
     await arabic.close();
 
     assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
