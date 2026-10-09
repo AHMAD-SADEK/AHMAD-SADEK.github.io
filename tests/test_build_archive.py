@@ -207,6 +207,7 @@ class ArchiveBuilderTests(unittest.TestCase):
         self.assertEqual(allowed_url("javascript:alert(1)"), "")
         self.assertEqual(image_url("An explanatory note: https://example.org/not-a-cover"), "")
         self.assertEqual(image_url("https://example.org/cover.png"), "https://example.org/cover.png")
+        self.assertEqual(image_url("http://example.org/cover.png"), "")
 
     def test_unpublished_article_pages_are_removed_without_deleting_other_folders(self):
         item = build_item(issue(article_body(), number=44))
