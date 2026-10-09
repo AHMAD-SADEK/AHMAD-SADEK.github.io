@@ -59,7 +59,9 @@
       retry: "Try again", countOne: "entry", countMany: "entries", back: "Back to archive",
       abstract: "Abstract", references: "References", attachments: "Attached files",
       relatedLinks: "Related links", openFile: "Open / download", articleSource: "View source on GitHub",
-      readingTime: "Reading time", by: "By", categories: {
+      readingTime: "Reading time", by: "By",
+      translationFallback: "This entry is shown in its original language because a translation is not available.",
+      categories: {
         pharmacy: "Medicine & Pharmacy", engineering: "Engineering & Technology",
         thought: "Thought & Philosophy", personal: "Personal", academic: "Academic", general: "General"
       },
@@ -119,7 +121,9 @@
       retry: "إعادة المحاولة", countOne: "مادة", countMany: "مواد", back: "العودة إلى الأرشيف",
       abstract: "الملخص", references: "المراجع", attachments: "الملفات المرفقة",
       relatedLinks: "روابط ذات صلة", openFile: "فتح / تنزيل", articleSource: "عرض المصدر على GitHub",
-      readingTime: "وقت القراءة", by: "بقلم", categories: {
+      readingTime: "وقت القراءة", by: "بقلم",
+      translationFallback: "هذه المادة معروضة بلغتها الأصلية لعدم توفر ترجمة.",
+      categories: {
         pharmacy: "الطب والصيدلة", engineering: "الهندسة والتقنية",
         thought: "الفكر والفلسفة", personal: "المساحة الشخصية", academic: "أكاديمي", general: "عام"
       },
@@ -545,14 +549,38 @@
       host.appendChild(cover);
     }
 
-    const abstract = item.abstract;
-    const body = currentLanguage === "ar" && item.secondLanguage ? item.secondLanguage : item.contentMarkdown;
-    const abstractBlock = renderMarkdownBlock(t("abstract"), abstract);
-    if (abstractBlock) host.appendChild(abstractBlock);
+    const guessedPrimary = /[\u0600-\u06FF]/.test(item.contentMarkdown || "") ? "ar" : "en";
+    const languageChoice = String(item.language || "");
+    const primaryLanguage = item.primaryLanguage || (
+      /arabic|العربية/i.test(languageChoice) && !/bilingual|ثنائية اللغة/i.test(languageChoice)
+        ? "ar"
+        : (/english/i.test(languageChoice) && !/bilingual/i.test(languageChoice) ? "en" : guessedPrimary)
+    );
+    const hasTranslation = Boolean(String(item.secondLanguage || "").trim());
+    const showingTranslation = hasTranslation && currentLanguage !== primaryLanguage;
+    const body = showingTranslation ? item.secondLanguage : item.contentMarkdown;
+    if (!hasTranslation && currentLanguage !== primaryLanguage) {
+      const note = document.createElement("p");
+      note.className = "small-meta";
+      note.dir = "auto";
+      safeText(note, t("translationFallback"));
+      host.appendChild(note);
+    }
+    const abstractBlock = showingTranslation ? null : renderMarkdownBlock(t("abstract"), item.abstract);
+    if (abstractBlock) {
+      abstractBlock.dir = primaryLanguage;
+      host.appendChild(abstractBlock);
+    }
     const bodyBlock = renderMarkdownBlock("", body);
-    if (bodyBlock) host.appendChild(bodyBlock);
+    if (bodyBlock) {
+      bodyBlock.dir = showingTranslation ? currentLanguage : primaryLanguage;
+      host.appendChild(bodyBlock);
+    }
     const refsBlock = renderMarkdownBlock(t("references"), item.referencesMarkdown);
-    if (refsBlock) host.appendChild(refsBlock);
+    if (refsBlock) {
+      refsBlock.dir = primaryLanguage;
+      host.appendChild(refsBlock);
+    }
 
     renderAttachments(host, item);
     if (item.sourceUrl && safeURL(item.sourceUrl, "link")) {
