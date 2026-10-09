@@ -61,8 +61,28 @@ async function main() {
     await mobile.waitForURL("**/#archive");
     assert.equal(await menuButton.getAttribute("aria-expanded"), "false", "navigating should close the mobile menu");
 
-    assert.deepEqual(pageErrors, [], "the main page and article page should not throw uncaught JavaScript errors");
-    console.log("Browser regression tests passed: featured content, permalink/article, language direction, search, type filter, and mobile navigation.");
+
+    const arabic = await browser.newPage({ viewport: { width: 375, height: 812 } });
+    arabic.on("pageerror", (error) => pageErrors.push(error.message));
+    await arabic.route(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//, (route) => route.abort());
+    await arabic.goto("http://127.0.0.1:4173/ar/", { waitUntil: "domcontentloaded" });
+    await arabic.locator("#featuredList .feature").first().waitFor({ state: "visible", timeout: 15000 });
+    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "the Arabic landing URL should declare Arabic");
+    assert.equal(await arabic.locator("html").getAttribute("dir"), "rtl", "the Arabic landing URL should use RTL direction");
+    assert.equal(await arabic.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/ar/");
+    assert.match(await arabic.locator("#homeTitle").innerText(), /أحمد\s+صادق/);
+    assert.doesNotMatch(await arabic.locator("#homeTitle").innerText(), /صادق\./, "the Arabic name should not carry an awkward trailing Latin period");
+    assert.match(await arabic.locator("#featuredList").innerText(), /The Discipline of Curiosity/);
+    await arabic.locator('[data-lang="en"]').click();
+    await arabic.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
+    assert.equal(await arabic.locator("html").getAttribute("lang"), "en", "switching to English should use the English canonical route");
+    await arabic.locator('[data-lang="ar"]').click();
+    await arabic.waitForURL((url) => url.pathname === "/ar/", { timeout: 10000 });
+    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
+    await arabic.close();
+
+    assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
+    console.log("Browser regression tests passed: archive, article, language direction, Arabic SEO landing page, search, filtering, and mobile navigation.");
     await mobile.close();
   } finally {
     await browser.close();
