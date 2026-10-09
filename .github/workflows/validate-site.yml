@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [site/archive-quality-and-security]
+    branches: [main, site/archive-quality-and-security]
 
 permissions:
   contents: read
