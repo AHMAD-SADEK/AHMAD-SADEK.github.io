@@ -310,7 +310,7 @@
   function createEntry(item) {
     const link = document.createElement("a");
     link.className = "entry";
-    link.href = "#entry/" + encodeURIComponent(String(item.id));
+    link.href = "/articles/" + encodeURIComponent(String(item.id)) + "/";
     link.setAttribute("aria-label", item.title + " — " + typeLabel(item.type));
 
     const type = document.createElement("div");
@@ -374,7 +374,7 @@
     latest.forEach((item) => {
       const link = document.createElement("a");
       link.className = "feature";
-      link.href = "#entry/" + encodeURIComponent(String(item.id));
+      link.href = "/articles/" + encodeURIComponent(String(item.id)) + "/";
       const label = document.createElement("small");
       safeText(label, typeLabel(item.type) + (categoryLabel(item.category) ? " · " + categoryLabel(item.category) : ""));
       const heading = document.createElement("h3");
