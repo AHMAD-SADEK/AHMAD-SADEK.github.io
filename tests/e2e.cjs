@@ -87,8 +87,11 @@ async function main() {
       const titleStyle = getComputedStyle(el);
       const gridStyle = getComputedStyle(el.closest(".hero-grid"));
       const spans = [...el.querySelectorAll("span")];
+      const firstRect = spans[0].getBoundingClientRect();
+      const lastRect = spans[1].getBoundingClientRect();
       return {
         display: titleStyle.display,
+        fontFamily: titleStyle.fontFamily,
         whiteSpace: titleStyle.whiteSpace,
         gridAlignment: gridStyle.alignItems,
         columnWidths: gridStyle.gridTemplateColumns.trim().split(/\s+/).map((value) => parseFloat(value)),
@@ -96,38 +99,48 @@ async function main() {
         introMarginTop: parseFloat(getComputedStyle(el.closest(".hero-grid").children[1]).marginTop),
         introTopOffset: el.closest(".hero-grid").children[1].getBoundingClientRect().top - el.getBoundingClientRect().top,
         fits: el.scrollWidth <= el.clientWidth,
-        spanTopDifference: Math.abs(spans[0].getBoundingClientRect().top - spans[1].getBoundingClientRect().top)
+        overlap: lastRect.right - firstRect.left,
+        spanTopDifference: Math.abs(firstRect.top - lastRect.top)
       };
     });
     assert.equal(desktopHero.display, "flex", "the Arabic name should be composed horizontally");
+    assert.match(desktopHero.fontFamily, /Aref Ruqaa/, "the Arabic name should use its dedicated display typeface");
     assert.equal(desktopHero.whiteSpace, "nowrap", "the Arabic name should stay on one line");
-    assert.equal(desktopHero.columnCount, 2, "the desktop Arabic hero should balance name and intro in two columns");
+    assert.equal(desktopHero.columnCount, 2, "the desktop Arabic hero should keep its two-column composition");
     assert.equal(desktopHero.gridAlignment, "start", "the one-line name should start at the top of the hero composition");
     assert.ok(desktopHero.columnWidths[0] > desktopHero.columnWidths[1],
       "the Arabic hero should retain the wider name column and narrower intro column");
     assert.ok(desktopHero.introMarginTop >= 120 && desktopHero.introMarginTop <= 165,
-      "the Arabic intro should return to a noticeably lower position, not merely centered with the one-line name");
+      "the Arabic intro should remain lower to preserve its editorial placement");
     assert.ok(desktopHero.introTopOffset >= 120,
-      "the intro block should sit below the one-line headline, restoring the original editorial rhythm");
+      "the intro block should sit below the one-line headline");
     assert.equal(desktopHero.fits, true, "the one-line Arabic name should fit its desktop column");
-    assert.ok(desktopHero.spanTopDifference < 2, "both parts of the Arabic name should sit on the same line");
+    assert.ok(desktopHero.overlap >= 4 && desktopHero.overlap <= 16,
+      "the two Arabic words should overlap subtly without obscuring the lettering");
+    assert.ok(desktopHero.spanTopDifference >= 2 && desktopHero.spanTopDifference <= 8,
+      "the words should have a slight optical stagger, not a large baseline jump");
 
     await arabic.setViewportSize({ width: 375, height: 812 });
     const mobileHero = await arabic.locator("#homeTitle").evaluate((el) => {
       const titleStyle = getComputedStyle(el);
       const gridStyle = getComputedStyle(el.closest(".hero-grid"));
+      const spans = [...el.querySelectorAll("span")];
       return {
         display: titleStyle.display,
+        fontFamily: titleStyle.fontFamily,
         whiteSpace: titleStyle.whiteSpace,
         columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
         introMarginTop: parseFloat(getComputedStyle(el.closest(".hero-grid").children[1]).marginTop),
+        overlap: spans[1].getBoundingClientRect().right - spans[0].getBoundingClientRect().left,
         fits: el.scrollWidth <= el.clientWidth
       };
     });
     assert.equal(mobileHero.display, "flex", "the Arabic name should remain composed horizontally on mobile");
+    assert.match(mobileHero.fontFamily, /Aref Ruqaa/, "the display typeface should remain active on mobile");
     assert.equal(mobileHero.whiteSpace, "nowrap", "the Arabic name should not wrap on mobile");
     assert.equal(mobileHero.columnCount, 1, "mobile hero content should be stacked in one column");
     assert.equal(mobileHero.introMarginTop, 0, "the extra desktop intro offset should be removed on mobile");
+    assert.ok(mobileHero.overlap >= 2 && mobileHero.overlap <= 10, "mobile overlap should stay subtle");
     assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
     await arabic.close();
 
