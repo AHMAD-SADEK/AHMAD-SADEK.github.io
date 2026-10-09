@@ -292,12 +292,3 @@ a.feature { display: block; }
   .pdf-attachment object { height: auto; min-height: 90vh; }
 }
 
-
-/* Quiet, unobtrusive open-source credit in the footer. */
-.site-footer { align-items: center; }
-.footer-right { display: inline-flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 14px; }
-.source-link { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); text-decoration: none; font-size: 10px; line-height: 1.5; opacity: .78; transition: opacity .2s ease, color .2s ease; }
-.source-link:hover, .source-link:focus-visible { color: var(--ink); opacity: 1; }
-.source-link svg { flex: 0 0 auto; }
-[dir="rtl"] .footer-right { direction: rtl; }
-@media (max-width: 880px) { .site-footer { align-items: flex-start; } .footer-right { justify-content: flex-start; gap: 8px 12px; } }
