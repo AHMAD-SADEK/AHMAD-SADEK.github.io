@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'issues' || github.event.issue.user.login == 'AHMAD-SADEK'
+    if: github.event_name != 'issues' || github.event.sender.login == 'AHMAD-SADEK'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
