@@ -31,5 +31,8 @@ assert.match(safe, /rel="noopener noreferrer"/);
 assert.equal(markdown.safeURL("javascript:alert(1)", "link"), "");
 assert.equal(markdown.safeURL("//evil.example", "link"), "");
 assert.equal(markdown.safeURL("https://example.com/path", "link"), "https://example.com/path");
+assert.equal(markdown.safeURL("https://user:pass@example.com/", "link"), "");
+assert.equal(markdown.safeURL("http://example.com/pixel.png", "image"), "");
+assert.equal(markdown.safeURL("https://example.com/pixel.png", "image"), "https://example.com/pixel.png");
 
 console.log("Markdown safety and rendering tests passed.");
