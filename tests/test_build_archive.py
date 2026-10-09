@@ -147,10 +147,10 @@ class ArchiveBuilderTests(unittest.TestCase):
 
     def test_markdown_field_like_headings_do_not_split_article_body(self):
         body_text = (
-            "Main paragraph.\\n\\n"
-            "### Second Language Version\\n\\nThis is part of the article.\\n\\n"
-            "### References\\n\\nA heading about references, not the form field.\\n\\n"
-            "### PDF / Files\\n\\nThis heading belongs to the article."
+            "Main paragraph.\n\n"
+            "### Second Language Version\n\nThis is part of the article.\n\n"
+            "### References\n\nA heading about references, not the form field.\n\n"
+            "### PDF / Files\n\nThis heading belongs to the article."
         )
         fields = parse_form_fields(article_body(content=body_text), SCHEMAS["writing"])
         self.assertEqual(fields["Content"], body_text)
