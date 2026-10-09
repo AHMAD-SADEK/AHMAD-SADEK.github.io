@@ -191,7 +191,8 @@ a.feature { display: block; }
 [dir="rtl"] .hero-grid, [dir="rtl"] .split, [dir="rtl"] .library-grid, [dir="rtl"] .contact-grid { direction: rtl; }
 /* The Arabic headline needs tighter leading and optical centering against the intro. */
 [dir="rtl"] .hero-grid { align-items: center; }
-[dir="rtl"] .hero h1 { font: 700 clamp(78px, 11vw, 150px)/1.08 var(--arabic); letter-spacing: 0; }
+/* Keep the Arabic name as one compact typographic unit, closer in height to the intro copy. */
+[dir="rtl"] .hero h1 { font: 700 clamp(76px, 9.4vw, 128px)/.98 var(--arabic); letter-spacing: 0; }
 [dir="rtl"] .hero-lead { font: 400 clamp(28px, 3vw, 39px)/1.45 var(--arabic); }
 [dir="rtl"] .hero-meta { font-size: 12px; line-height: 1.9; }
 [dir="rtl"] .lead-text { font: 400 clamp(35px, 4.4vw, 60px)/1.42 var(--arabic); letter-spacing: 0; }
@@ -248,7 +249,7 @@ a.feature { display: block; }
   .article-prose table { display: block; overflow-x: auto; }
   .site-footer { flex-direction: column; gap: 8px; }
   [dir="rtl"] .hero-grid { align-items: stretch; }
-  [dir="rtl"] .hero h1 { font-size: clamp(68px, 18vw, 108px); line-height: 1.1; }
+  [dir="rtl"] .hero h1 { font-size: clamp(66px, 17vw, 100px); line-height: 1.02; }
   [dir="rtl"] .lead-text { font-size: clamp(31px, 9vw, 52px); }
   [dir="rtl"] .page-hero h1 { font-size: clamp(53px, 15vw, 98px); line-height: 1.22; }
   [dir="rtl"] .article-page h1 { font-size: clamp(46px, 13vw, 78px); }
