@@ -45,11 +45,11 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/build_archive.py
-            if git diff --quiet -- archive.json; then
+            if git diff --quiet -- archive.json articles/ sitemap.xml; then
               echo "Archive is already up to date."
               exit 0
             fi
-            git add archive.json
+            git add -A -- archive.json articles/ sitemap.xml
             git commit -m "chore: update approved archive data"
             if git push origin HEAD:main; then
               echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -62,7 +62,7 @@ jobs:
           exit 1
 
       - name: Request GitHub Pages build after issue publication changes
-        if: github.event_name == 'issues' && steps.publish.outputs.changed == 'true'
+        if: steps.publish.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
