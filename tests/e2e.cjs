@@ -79,6 +79,32 @@ async function main() {
     await arabic.locator('[data-lang="ar"]').click();
     await arabic.waitForURL((url) => url.pathname === "/ar/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
+
+    await arabic.setViewportSize({ width: 1365, height: 900 });
+    const desktopHero = await arabic.locator("#homeTitle").evaluate((el) => {
+      const titleStyle = getComputedStyle(el);
+      return {
+        lineHeightRatio: parseFloat(titleStyle.lineHeight) / parseFloat(titleStyle.fontSize),
+        gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
+      };
+    });
+    assert.ok(desktopHero.lineHeightRatio >= 1.06 && desktopHero.lineHeightRatio <= 1.10,
+      "the Arabic name should use a compact, readable line height on desktop");
+    assert.equal(desktopHero.gridAlignment, "center",
+      "the Arabic name and introduction should align around a shared visual center");
+
+    await arabic.setViewportSize({ width: 375, height: 812 });
+    const mobileHero = await arabic.locator("#homeTitle").evaluate((el) => {
+      const titleStyle = getComputedStyle(el);
+      return {
+        lineHeightRatio: parseFloat(titleStyle.lineHeight) / parseFloat(titleStyle.fontSize),
+        gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
+      };
+    });
+    assert.ok(mobileHero.lineHeightRatio >= 1.08 && mobileHero.lineHeightRatio <= 1.12,
+      "the Arabic name should keep a compact line height on mobile");
+    assert.equal(mobileHero.gridAlignment, "stretch",
+      "mobile Arabic hero content should preserve the full-width stacked layout");
     await arabic.close();
 
     assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
