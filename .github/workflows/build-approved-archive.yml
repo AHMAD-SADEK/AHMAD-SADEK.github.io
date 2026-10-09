@@ -45,7 +45,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/build_archive.py
-            if git diff --quiet -- archive.json articles/ sitemap.xml; then
+            if [ -z "$(git status --porcelain -- archive.json articles/ sitemap.xml)" ]; then
               echo "Archive is already up to date."
               exit 0
             fi
@@ -61,7 +61,7 @@ jobs:
           echo "Could not update archive after three attempts." >&2
           exit 1
 
-      - name: Request GitHub Pages build after issue publication changes
+      - name: Request GitHub Pages build after generated site changes
         if: steps.publish.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
