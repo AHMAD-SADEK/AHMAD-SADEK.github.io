@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -36,3 +36,20 @@ jobs:
           node --check assets/js/app.js
           node --check assets/js/article.js
           node tests/test_markdown.js
+      - name: Install browser regression-test dependency
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Start local static site
+        run: |
+          python -m http.server 4173 > /tmp/archive-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/archive-http.log
+          exit 1
+      - name: Test live navigation, language, search, and mobile menu
+        run: npm run test:e2e
