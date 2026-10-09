@@ -260,7 +260,7 @@ def allowed_url(value: str) -> str:
 
 def image_url(raw: str) -> str:
     value = (raw or "").strip()
-    match = re.search(r"<img\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1", value, re.I | re.S)
+    match = re.search(r"<img\b[^>]*\bsrc\s*=\s*([\"'])(.*?)\1", value, re.I | re.S)
     candidate = match.group(2).strip() if match else ""
     if not candidate:
         match = re.search(r"!\[[^\]]*\]\((https?://[^)\s]+)\)", value, re.I)
