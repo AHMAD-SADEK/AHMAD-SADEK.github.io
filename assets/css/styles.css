@@ -277,3 +277,16 @@ a.feature { display: block; }
 /* Article copy follows its own language even when the surrounding interface is translated. */
 .article-page h1[dir="ltr"], .article-subtitle[dir="ltr"], .article-prose[dir="ltr"] { direction: ltr; text-align: left; }
 .article-page h1[dir="rtl"], .article-subtitle[dir="rtl"], .article-prose[dir="rtl"] { direction: rtl; text-align: right; }
+
+
+/* Keep article labels in the interface language and manuscript text in its own language. */
+.article-prose [dir="ltr"] { direction: ltr; text-align: left; }
+.article-prose [dir="rtl"] { direction: rtl; text-align: right; }
+@media print {
+  .site-header, .mobile-nav, .site-footer, .article-back, .article-source,
+  .archive-tools, .filters, .status-message button { display: none !important; }
+  body, .article-page, .article-prose { background: #fff !important; color: #000 !important; }
+  .article-page { max-width: none; padding: 0; }
+  .article-prose a { color: #000; text-decoration: underline; }
+  .pdf-attachment object { height: auto; min-height: 90vh; }
+}
