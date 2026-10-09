@@ -93,6 +93,8 @@ async function main() {
         gridAlignment: gridStyle.alignItems,
         columnWidths: gridStyle.gridTemplateColumns.trim().split(/\s+/).map((value) => parseFloat(value)),
         columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
+        introMarginTop: parseFloat(getComputedStyle(el.closest(".hero-grid").children[1]).marginTop),
+        introTopOffset: el.closest(".hero-grid").children[1].getBoundingClientRect().top - el.getBoundingClientRect().top,
         fits: el.scrollWidth <= el.clientWidth,
         spanTopDifference: Math.abs(spans[0].getBoundingClientRect().top - spans[1].getBoundingClientRect().top)
       };
@@ -100,9 +102,13 @@ async function main() {
     assert.equal(desktopHero.display, "flex", "the Arabic name should be composed horizontally");
     assert.equal(desktopHero.whiteSpace, "nowrap", "the Arabic name should stay on one line");
     assert.equal(desktopHero.columnCount, 2, "the desktop Arabic hero should balance name and intro in two columns");
-    assert.equal(desktopHero.gridAlignment, "end", "the intro should retain its original lower alignment");
+    assert.equal(desktopHero.gridAlignment, "start", "the one-line name should start at the top of the hero composition");
     assert.ok(desktopHero.columnWidths[0] > desktopHero.columnWidths[1],
-      "the Arabic hero should restore the wider name column and narrower intro column");
+      "the Arabic hero should retain the wider name column and narrower intro column");
+    assert.ok(desktopHero.introMarginTop >= 120 && desktopHero.introMarginTop <= 165,
+      "the Arabic intro should return to a noticeably lower position, not merely centered with the one-line name");
+    assert.ok(desktopHero.introTopOffset >= 120,
+      "the intro block should sit below the one-line headline, restoring the original editorial rhythm");
     assert.equal(desktopHero.fits, true, "the one-line Arabic name should fit its desktop column");
     assert.ok(desktopHero.spanTopDifference < 2, "both parts of the Arabic name should sit on the same line");
 
@@ -114,12 +120,14 @@ async function main() {
         display: titleStyle.display,
         whiteSpace: titleStyle.whiteSpace,
         columnCount: gridStyle.gridTemplateColumns.trim().split(/\s+/).length,
+        introMarginTop: parseFloat(getComputedStyle(el.closest(".hero-grid").children[1]).marginTop),
         fits: el.scrollWidth <= el.clientWidth
       };
     });
     assert.equal(mobileHero.display, "flex", "the Arabic name should remain composed horizontally on mobile");
     assert.equal(mobileHero.whiteSpace, "nowrap", "the Arabic name should not wrap on mobile");
     assert.equal(mobileHero.columnCount, 1, "mobile hero content should be stacked in one column");
+    assert.equal(mobileHero.introMarginTop, 0, "the extra desktop intro offset should be removed on mobile");
     assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
     await arabic.close();
 

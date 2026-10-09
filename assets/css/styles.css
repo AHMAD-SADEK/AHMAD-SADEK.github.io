@@ -189,6 +189,10 @@ a.feature { display: block; }
 }
 [dir="rtl"] .brand { direction: rtl; }
 [dir="rtl"] .hero-grid, [dir="rtl"] .split, [dir="rtl"] .library-grid, [dir="rtl"] .contact-grid { direction: rtl; }
+/* Preserve the old editorial rhythm: the short one-line name starts high,
+   while the intro block sits lower, as it did beside the two-line name. */
+[dir="rtl"] .hero-grid { align-items: start; }
+[dir="rtl"] .hero-grid > div:nth-child(2) { margin-top: clamp(120px, 11vw, 150px); }
 /* Keep the original asymmetric editorial grid for the intro copy.
    The one-line Arabic name adapts inside the existing wider headline column. */
 /* Arabic word shapes need a horizontal composition rather than the English line break. */
@@ -261,6 +265,7 @@ a.feature { display: block; }
     align-items: stretch;
     gap: 30px;
   }
+  [dir="rtl"] .hero-grid > div:nth-child(2) { margin-top: 0; }
   [dir="rtl"] .hero h1.arabic-home-title {
     font-size: clamp(62px, 16vw, 82px);
     line-height: 1.25;
