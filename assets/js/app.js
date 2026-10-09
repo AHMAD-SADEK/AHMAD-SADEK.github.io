@@ -196,7 +196,7 @@
   }
 
   function getPageForHash() {
-    const hash = decodeURIComponent(location.hash.slice(1) || "home");
+    const hash = location.hash.slice(1) || "home";
     if (hash.startsWith("entry/")) return "entry";
     if (hash === "contact") return "home";
     const section = document.querySelector('[data-page="' + CSS.escape(hash) + '"]');
@@ -228,7 +228,7 @@
     return page === "entry" ? "archive" : page;
   }
   function renderRoute() {
-    const rawHash = decodeURIComponent(location.hash.slice(1) || "home");
+    const rawHash = location.hash.slice(1) || "home";
     if (rawHash.startsWith("entry/")) {
       document.querySelectorAll("[data-page]").forEach((page) => { page.hidden = page.dataset.page !== "entry"; });
       document.querySelectorAll(".desktop-nav .nav-link, .mobile-nav .nav-link").forEach((link) => {
@@ -393,16 +393,20 @@
     return button;
   }
 
-  function renderMarkdownBlock(title, markdown) {
+  function renderMarkdownBlock(title, markdown, contentLanguage = currentLanguage) {
     if (!markdown || !window.ArchiveMarkdown) return null;
     const section = document.createElement("section");
     section.className = "article-prose";
+    section.lang = currentLanguage;
+    section.dir = currentLanguage === "ar" ? "rtl" : "ltr";
     if (title) {
       const heading = document.createElement("h2");
       safeText(heading, title);
       section.appendChild(heading);
     }
     const content = document.createElement("div");
+    content.lang = contentLanguage;
+    content.dir = contentLanguage === "ar" ? "rtl" : "ltr";
     // The renderer escapes source HTML and emits only a small allowlisted set of elements.
     content.innerHTML = window.ArchiveMarkdown.render(markdown);
     section.appendChild(content);
@@ -504,8 +508,11 @@
   function renderArticle(rawId) {
     const host = document.getElementById("articleHost");
     if (!host) return;
-    const id = Number(decodeURIComponent(String(rawId || "")));
-    const item = archiveItems.find((entry) => entry.id === id);
+    const idText = String(rawId ?? "");
+    const id = /^[1-9]\\d*$/.test(idText) ? Number(idText) : NaN;
+    const item = Number.isSafeInteger(id)
+      ? archiveItems.find((entry) => entry.id === id)
+      : undefined;
     if (!item) {
       host.replaceChildren(makeStatus(loadFailed ? t("loadError") : t("empty"), loadFailed ? "error" : ""));
       if (loadFailed) host.appendChild(makeRetryButton());
@@ -528,6 +535,7 @@
     const articlePrimaryLanguage = primaryLanguageFor(item);
     const heading = document.createElement("h1");
     heading.id = "articleTitle";
+    heading.lang = articlePrimaryLanguage;
     heading.dir = articlePrimaryLanguage;
     safeText(heading, item.title);
     host.setAttribute("aria-labelledby", "articleTitle");
@@ -536,6 +544,7 @@
     if (item.subtitle) {
       const subtitle = document.createElement("p");
       subtitle.className = "article-subtitle";
+      subtitle.lang = articlePrimaryLanguage;
       subtitle.dir = articlePrimaryLanguage;
       safeText(subtitle, item.subtitle);
       host.appendChild(subtitle);
@@ -571,21 +580,12 @@
       safeText(note, t("translationFallback"));
       host.appendChild(note);
     }
-    const abstractBlock = showingTranslation ? null : renderMarkdownBlock(t("abstract"), item.abstract);
-    if (abstractBlock) {
-      abstractBlock.dir = primaryLanguage;
-      host.appendChild(abstractBlock);
-    }
-    const bodyBlock = renderMarkdownBlock("", body);
-    if (bodyBlock) {
-      bodyBlock.dir = showingTranslation ? currentLanguage : primaryLanguage;
-      host.appendChild(bodyBlock);
-    }
-    const refsBlock = renderMarkdownBlock(t("references"), item.referencesMarkdown);
-    if (refsBlock) {
-      refsBlock.dir = primaryLanguage;
-      host.appendChild(refsBlock);
-    }
+    const abstractBlock = showingTranslation ? null : renderMarkdownBlock(t("abstract"), item.abstract, primaryLanguage);
+    if (abstractBlock) host.appendChild(abstractBlock);
+    const bodyBlock = renderMarkdownBlock("", body, showingTranslation ? currentLanguage : primaryLanguage);
+    if (bodyBlock) host.appendChild(bodyBlock);
+    const refsBlock = renderMarkdownBlock(t("references"), item.referencesMarkdown, primaryLanguage);
+    if (refsBlock) host.appendChild(refsBlock);
 
     renderAttachments(host, item);
     if (item.sourceUrl && safeURL(item.sourceUrl, "link")) {
