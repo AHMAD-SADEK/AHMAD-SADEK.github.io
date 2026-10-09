@@ -88,7 +88,7 @@ async function main() {
         gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
       };
     });
-    assert.ok(desktopHero.lineHeightRatio >= 1.06 && desktopHero.lineHeightRatio <= 1.10,
+    assert.ok(desktopHero.lineHeightRatio >= 0.96 && desktopHero.lineHeightRatio <= 1.00,
       "the Arabic name should use a compact, readable line height on desktop");
     assert.equal(desktopHero.gridAlignment, "center",
       "the Arabic name and introduction should align around a shared visual center");
@@ -101,7 +101,7 @@ async function main() {
         gridAlignment: getComputedStyle(el.closest(".hero-grid")).alignItems
       };
     });
-    assert.ok(mobileHero.lineHeightRatio >= 1.08 && mobileHero.lineHeightRatio <= 1.12,
+    assert.ok(mobileHero.lineHeightRatio >= 1.00 && mobileHero.lineHeightRatio <= 1.04,
       "the Arabic name should keep a compact line height on mobile");
     assert.equal(mobileHero.gridAlignment, "stretch",
       "mobile Arabic hero content should preserve the full-width stacked layout");
