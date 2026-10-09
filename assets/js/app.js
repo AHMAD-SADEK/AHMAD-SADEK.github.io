@@ -509,7 +509,7 @@
     const host = document.getElementById("articleHost");
     if (!host) return;
     const idText = String(rawId ?? "");
-    const id = /^[1-9]\\d*$/.test(idText) ? Number(idText) : NaN;
+    const id = /^[1-9]\d*$/.test(idText) ? Number(idText) : NaN;
     const item = Number.isSafeInteger(id)
       ? archiveItems.find((entry) => entry.id === id)
       : undefined;
