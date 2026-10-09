@@ -13,6 +13,7 @@
   --max: 1220px;
   --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --arabic: "Amiri", Georgia, serif;
+  --arabic-display: "Aref Ruqaa", "Amiri", Georgia, serif;
   --arabic-ui: "Noto Kufi Arabic", "Segoe UI", sans-serif;
   --sans: "Manrope", "Segoe UI", Arial, sans-serif;
   --shadow: 0 18px 55px rgb(43 41 36 / 7%);
@@ -195,15 +196,29 @@ a.feature { display: block; }
 [dir="rtl"] .hero-grid > div:nth-child(2) { margin-top: clamp(120px, 11vw, 150px); }
 /* Keep the original asymmetric editorial grid for the intro copy.
    The one-line Arabic name adapts inside the existing wider headline column. */
-/* Arabic word shapes need a horizontal composition rather than the English line break. */
+/* Aref Ruqaa gives the Arabic name a more calligraphic, editorial voice.
+   A small, deliberate tuck between the words creates one cohesive wordmark. */
 [dir="rtl"] .hero h1.arabic-home-title {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: .12em;
+  gap: 0;
   white-space: nowrap;
-  font: 700 clamp(68px, 8vw, 118px)/1.25 var(--arabic);
+  font: 700 clamp(72px, 7.7vw, 112px)/1.2 var(--arabic-display);
   letter-spacing: 0;
+}
+[dir="rtl"] .hero h1.arabic-home-title .first-name {
+  position: relative;
+  z-index: 2;
+  color: var(--accent);
+  transform: translateY(-.025em);
+}
+[dir="rtl"] .hero h1.arabic-home-title .last-name {
+  position: relative;
+  z-index: 1;
+  color: var(--ink);
+  margin-inline-start: -.085em;
+  transform: translateY(.018em);
 }
 [dir="rtl"] .hero-lead { font: 400 clamp(28px, 3vw, 39px)/1.45 var(--arabic); }
 [dir="rtl"] .hero-meta { font-size: 12px; line-height: 1.9; }
@@ -267,9 +282,10 @@ a.feature { display: block; }
   }
   [dir="rtl"] .hero-grid > div:nth-child(2) { margin-top: 0; }
   [dir="rtl"] .hero h1.arabic-home-title {
-    font-size: clamp(62px, 16vw, 82px);
-    line-height: 1.25;
+    font-size: clamp(58px, 15.5vw, 78px);
+    line-height: 1.2;
   }
+  [dir="rtl"] .hero h1.arabic-home-title .last-name { margin-inline-start: -.075em; }
   [dir="rtl"] .lead-text { font-size: clamp(31px, 9vw, 52px); }
   [dir="rtl"] .page-hero h1 { font-size: clamp(53px, 15vw, 98px); line-height: 1.22; }
   [dir="rtl"] .article-page h1 { font-size: clamp(46px, 13vw, 78px); }
