@@ -479,7 +479,11 @@ def markdown_inline_static(source: str) -> str:
     text = re.sub(r"(^|[^_])_([^_\n]+)_(?!_)", r"\1<em>\2</em>", text)
     text = re.sub(r"~~(.+?)~~", r"<del>\1</del>", text)
     text = text.replace("\n", "<br>")
-    return re.sub(r"\x00M(\d+)\x00", lambda match: tokens[int(match.group(1))], text)
+    return re.sub(
+        r"\x00M(\d+)\x00",
+        lambda match: tokens[int(match.group(1))] if int(match.group(1)) < len(tokens) else match.group(0),
+        text,
+    )
 
 
 def render_markdown_static(source: str) -> str:
