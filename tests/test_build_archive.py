@@ -145,6 +145,19 @@ class ArchiveBuilderTests(unittest.TestCase):
         self.assertIn("### References", fields["Content"])
         self.assertEqual(fields["References"], "")
 
+    def test_markdown_field_like_headings_do_not_split_article_body(self):
+        body_text = (
+            "Main paragraph.\\n\\n"
+            "### Second Language Version\\n\\nThis is part of the article.\\n\\n"
+            "### References\\n\\nA heading about references, not the form field.\\n\\n"
+            "### PDF / Files\\n\\nThis heading belongs to the article."
+        )
+        fields = parse_form_fields(article_body(content=body_text), SCHEMAS["writing"])
+        self.assertEqual(fields["Content"], body_text)
+        self.assertEqual(fields["Second Language Version"], "")
+        self.assertEqual(fields["References"], "")
+        self.assertEqual(fields["PDF / Files"], "")
+
     def test_unsafe_cover_scheme_is_rejected(self):
         self.assertEqual(image_url('<img src="javascript:alert(1)">'), "")
 
