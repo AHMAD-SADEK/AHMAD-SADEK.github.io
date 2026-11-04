@@ -434,7 +434,7 @@ def build_content_items(content_dir: Path | None = None) -> list[dict[str, Any]]
             if not path.is_file():
                 raise ValueError(f"Missing referenced Markdown file: {path}")
             return path.read_text(encoding="utf-8").strip()
-        words = len(re.findall(r"\\b[\\w'-]+\\b", content))
+        words = len(re.findall(r"\b[\w'-]+\b", content))
         attachments = []
         for entry in metadata.get("attachments", []) or []:
             if isinstance(entry, str):

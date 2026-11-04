@@ -257,7 +257,8 @@ class ArchiveBuilderTests(unittest.TestCase):
                 "language": "English", "date": "2026-11-05", "tags": ["essay"]
             }), encoding="utf-8")
             (folder / "content.md").write_text(manuscript, encoding="utf-8")
-            items = build_content_items(Path(temp_dir))
+            with patch("scripts.build_archive.ROOT", Path(temp_dir)):
+                items = build_content_items(Path(temp_dir))
             self.assertEqual(len(items), 1)
             self.assertEqual(items[0]["contentMarkdown"], manuscript)
             self.assertGreater(len(items[0]["contentMarkdown"]), 65536)
