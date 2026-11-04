@@ -14,7 +14,7 @@ from typing import Any, Callable
 MODEL_NAME = "facebook/m2m100_418M"
 MODEL_REVISION = "m2m100-418m-v1"
 MAX_INPUT_TOKENS = 360
-BATCH_SIZE = 6
+BATCH_SIZE = 8
 
 FIELDS = (
     "title", "subtitle", "abstract", "contentMarkdown",
@@ -100,9 +100,9 @@ class NeuralTranslator:
                 generated = self.model.generate(
                     **encoded,
                     forced_bos_token_id=target_id,
-                    num_beams=3,
+                    num_beams=1,
                     max_new_tokens=MAX_INPUT_TOKENS + 32,
-                    early_stopping=True,
+                    early_stopping=False,
                 )
             translated.extend(
                 value.strip()

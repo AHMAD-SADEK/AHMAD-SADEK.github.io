@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: build-approved-archive-translations-v2
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
