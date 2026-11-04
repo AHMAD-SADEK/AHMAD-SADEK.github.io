@@ -184,6 +184,13 @@ def _render_translation_plan(
     return "".join(output)
 
 
+def _is_table_separator(line: str) -> bool:
+    if "|" not in line:
+        return False
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
+
+
 def translate_markdown(text: str, translator: NeuralTranslator, source: str, target: str) -> str:
     """Translate Markdown prose in batches while retaining formatting and protected spans."""
     tokenizer = getattr(translator, "tokenizer", None)
