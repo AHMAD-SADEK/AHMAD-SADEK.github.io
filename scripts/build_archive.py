@@ -17,6 +17,7 @@ from xml.sax.saxutils import escape as xml_escape
 import urllib.error
 import urllib.parse
 import urllib.request
+import zlib
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "archive.json"
 ARTICLES_DIR = ROOT / "articles"
+CONTENT_DIR = ROOT / "content"
 SITE_URL = "https://ahmad-sadek.github.io"
 OWNER_LOGIN = "AHMAD-SADEK"
 
@@ -376,6 +378,91 @@ def build_item(issue: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+
+def build_content_items(content_dir: Path | None = None) -> list[dict[str, Any]]:
+    """Load approved long-form Markdown publications stored in the repository."""
+    root = content_dir or CONTENT_DIR
+    if not root.exists():
+        return []
+    items = []
+    used_ids = set()
+    for metadata_path in sorted(root.glob("*/*/metadata.json")):
+        folder = metadata_path.parent
+        slug = folder.name
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
+            raise ValueError(f"Invalid publication slug: {slug}")
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if not isinstance(metadata, dict):
+            raise ValueError(f"Metadata must be an object: {metadata_path}")
+        status = normalize(metadata.get("status", "draft"))
+        if status not in {"draft", "published"}:
+            raise ValueError(f"Invalid publication status in {metadata_path}")
+        if status != "published":
+            continue
+        title = str(metadata.get("title") or "").strip()
+        kind_raw = normalize(metadata.get("type") or folder.parent.name)
+        kind = TYPE_ALIASES.get(kind_raw, kind_raw)
+        if not title or kind not in SCHEMAS:
+            raise ValueError(f"Published item needs a valid title and type: {metadata_path}")
+        manuscript = folder / "content.md"
+        if not manuscript.is_file():
+            raise ValueError(f"Published item is missing content.md: {folder}")
+        content = manuscript.read_text(encoding="utf-8").strip()
+        if not content:
+            raise ValueError(f"Published manuscript is empty: {manuscript}")
+        raw_id = metadata.get("id")
+        item_id = int(raw_id) if raw_id is not None else 1_000_000_000 + zlib.crc32(
+            f"{kind}/{slug}".encode("utf-8")
+        )
+        if item_id <= 0 or item_id in used_ids:
+            raise ValueError(f"Invalid or duplicate content id: {item_id}")
+        used_ids.add(item_id)
+        language = str(metadata.get("language") or "Bilingual")
+        summary = str(metadata.get("abstract") or metadata.get("summary") or "").strip()
+        tags = metadata.get("tags") or []
+        if isinstance(tags, str):
+            tags = split_tags(tags)
+        if not isinstance(tags, list) or any(not isinstance(tag, str) for tag in tags):
+            raise ValueError(f"tags must be strings in {metadata_path}")
+        def sibling_markdown(key: str) -> str:
+            filename = str(metadata.get(key) or "").strip()
+            if not filename:
+                return ""
+            if Path(filename).name != filename or not filename.lower().endswith(".md"):
+                raise ValueError(f"{key} must name a sibling Markdown file")
+            path = folder / filename
+            if not path.is_file():
+                raise ValueError(f"Missing referenced Markdown file: {path}")
+            return path.read_text(encoding="utf-8").strip()
+        words = len(re.findall(r"\b[\w'-]+\b", content))
+        attachments = []
+        for entry in metadata.get("attachments", []) or []:
+            if isinstance(entry, str):
+                attachments.extend(extract_links(entry))
+            elif isinstance(entry, dict):
+                url = allowed_url(str(entry.get("url") or ""))
+                if url:
+                    attachments.append({"label": str(entry.get("label") or "Open file"), "url": url})
+        items.append({
+            "id": item_id, "title": title,
+            "subtitle": str(metadata.get("subtitle") or summary[:240]),
+            "type": kind, "category": category_key(str(metadata.get("category") or "")),
+            "language": language, "primaryLanguage": primary_language(language, content),
+            "author": str(metadata.get("author") or OWNER_LOGIN),
+            "date": parse_date(str(metadata.get("date") or ""), ""),
+            "readingTime": str(metadata.get("readingTime") or f"{max(1, math.ceil(words / 200))} min"),
+            "tags": split_tags(", ".join(tags)), "coverImage": image_url(str(metadata.get("coverImage") or "")),
+            "abstract": summary, "contentMarkdown": content,
+            "secondLanguage": sibling_markdown("secondLanguageFile"),
+            "referencesMarkdown": sibling_markdown("referencesFile"),
+            "attachments": attachments, "links": extract_links(str(metadata.get("links") or "")),
+            "projectStatus": str(metadata.get("projectStatus") or ""),
+            "technologies": split_tags(str(metadata.get("technologies") or "")),
+            "sourceUrl": f"https://github.com/{OWNER_LOGIN}/AHMAD-SADEK.github.io/tree/main/{folder.relative_to(ROOT).as_posix()}",
+        })
+    return items
+
+
 def fetch_issues() -> list[dict[str, Any]]:
     repository = os.environ.get("GITHUB_REPOSITORY", "AHMAD-SADEK/AHMAD-SADEK.github.io")
     token = os.environ.get("GITHUB_TOKEN", "")
@@ -405,8 +492,11 @@ def fetch_issues() -> list[dict[str, Any]]:
     return result
 
 
-def build_archive(issues: list[dict[str, Any]]) -> dict[str, Any]:
-    items = [item for issue in issues if (item := build_item(issue)) is not None]
+def build_archive(issues: list[dict[str, Any]], content_items: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    items = [item for issue in issues if (item := build_item(issue)) is not None] + list(content_items or [])
+    ids = [item["id"] for item in items]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Publication ids collide between Issues and Markdown content.")
     items.sort(key=lambda item: (item["date"], item["id"]), reverse=True)
     return {"version": 1, "items": items}
 
@@ -756,7 +846,7 @@ def write_sitemap(items: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
-    data = build_archive(fetch_issues())
+    data = build_archive(fetch_issues(), build_content_items())
     serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
     OUTPUT.write_text(serialized, encoding="utf-8")
     write_article_pages(data["items"])

@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from scripts.build_archive import (
     build_archive,
+    build_content_items,
     build_article_page,
     build_item,
     allowed_url,
@@ -244,6 +245,43 @@ class ArchiveBuilderTests(unittest.TestCase):
         result = build_archive([older, draft, newer])
         self.assertEqual([item["id"] for item in result["items"]], [2, 1])
         self.assertEqual(result["version"], 1)
+
+
+    def test_markdown_repository_supports_manuscripts_over_issue_limit(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            folder = Path(temp_dir) / "writing" / "long-essay"
+            folder.mkdir(parents=True)
+            manuscript = ("A full paragraph about this subject.\n\n" * 4000).strip()
+            (folder / "metadata.json").write_text(json.dumps({
+                "title": "A Long Essay", "type": "writing", "status": "published",
+                "language": "English", "date": "2026-11-05", "tags": ["essay"]
+            }), encoding="utf-8")
+            (folder / "content.md").write_text(manuscript, encoding="utf-8")
+            with patch("scripts.build_archive.ROOT", Path(temp_dir)):
+                items = build_content_items(Path(temp_dir))
+            self.assertEqual(len(items), 1)
+            self.assertEqual(items[0]["contentMarkdown"], manuscript)
+            self.assertGreater(len(items[0]["contentMarkdown"]), 65536)
+
+    def test_markdown_repository_drafts_are_not_exported(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            folder = Path(temp_dir) / "writing" / "private-draft"
+            folder.mkdir(parents=True)
+            (folder / "metadata.json").write_text(json.dumps({
+                "title": "Private draft", "type": "writing", "status": "draft"
+            }), encoding="utf-8")
+            (folder / "content.md").write_text("Not public.", encoding="utf-8")
+            self.assertEqual(build_content_items(Path(temp_dir)), [])
+
+    def test_published_markdown_requires_manuscript(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            folder = Path(temp_dir) / "research" / "missing-file"
+            folder.mkdir(parents=True)
+            (folder / "metadata.json").write_text(json.dumps({
+                "title": "Missing manuscript", "type": "research", "status": "published"
+            }), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "missing content.md"):
+                build_content_items(Path(temp_dir))
 
 
 if __name__ == "__main__":

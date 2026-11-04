@@ -35,6 +35,18 @@ jobs:
           node --check assets/js/markdown.js
           node --check assets/js/app.js
           node --check assets/js/article.js
+          node --check assets/js/studio-bootstrap.js
+          python - <<'PY'
+          import gzip
+          import pathlib
+          import re
+          source = gzip.decompress(pathlib.Path("studio/studio-page.gz").read_bytes()).decode("utf-8")
+          scripts = re.findall(r"<script>(.*?)</script>", source, re.S)
+          if len(scripts) != 1:
+              raise SystemExit("Expected one inline studio controller script")
+          pathlib.Path("/tmp/archive-studio.js").write_text(scripts[0], encoding="utf-8")
+          PY
+          node --check /tmp/archive-studio.js
           node tests/test_markdown.js
       - name: Install browser regression-test dependency
         run: npm install --no-audit --no-fund

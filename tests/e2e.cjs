@@ -120,6 +120,17 @@ async function main() {
     assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
     await arabic.close();
 
+    const studio = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+    studio.on("pageerror", (error) => pageErrors.push(error.message));
+    await studio.goto("http://127.0.0.1:4173/studio/", { waitUntil: "domcontentloaded" });
+    await studio.locator("#login").waitFor({ state: "visible", timeout: 15000 });
+    assert.equal(await studio.locator("html").getAttribute("dir"), "rtl", "the publishing studio should open in Arabic RTL");
+    assert.match(await studio.locator("h1").innerText(), /مساحة الكتابة والنشر/, "the studio should render its publishing heading");
+    await studio.locator("#connect").click();
+    assert.match(await studio.locator("#loginStatus").innerText(), /أدخل رمز الوصول أولاً/, "the studio should validate an empty token without attempting an API write");
+    assert.equal(await studio.locator("#workspace").isHidden(), true, "the publishing workspace should remain locked before authentication");
+    await studio.close();
+
     assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
     console.log("Browser regression tests passed: archive, article, language direction, Arabic SEO landing page, search, filtering, and mobile navigation.");
     await mobile.close();
