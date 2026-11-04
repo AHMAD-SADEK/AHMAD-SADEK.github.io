@@ -36,6 +36,7 @@ jobs:
           node --check assets/js/app.js
           node --check assets/js/article.js
           node --check assets/js/studio-bootstrap.js
+          node --check assets/js/studio-retry.js
           python - <<'PY'
           import gzip
           import pathlib
