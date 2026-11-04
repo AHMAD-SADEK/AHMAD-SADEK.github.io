@@ -22,6 +22,7 @@
       abstract: "Abstract", references: "References", attachments: "Attached files",
       links: "Related links", open: "Open / download", source: "View source on GitHub",
       by: "By", readingTime: "Reading time", translationFallback: "This entry is shown in its original language because a translation is not available.",
+      machineTranslation: "Machine translation — review recommended.",
       types: { writing: "Writing", research: "Research", book: "Book", project: "Project", idea: "Idea", personal: "Personal" },
       categories: { pharmacy: "Medicine & Pharmacy", engineering: "Engineering & Technology", thought: "Thought & Philosophy", personal: "Personal", academic: "Academic", general: "General" }
     },
@@ -30,6 +31,7 @@
       abstract: "الملخص", references: "المراجع", attachments: "الملفات المرفقة",
       links: "روابط ذات صلة", open: "فتح / تنزيل", source: "عرض المصدر على GitHub",
       by: "بقلم", readingTime: "وقت القراءة", translationFallback: "هذه المادة معروضة بلغتها الأصلية لعدم توفر ترجمة.",
+      machineTranslation: "ترجمة آلية — يُنصح بمراجعة النص والمصطلحات.",
       types: { writing: "كتابة", research: "بحث", book: "كتاب", project: "مشروع", idea: "فكرة", personal: "شخصي" },
       categories: { pharmacy: "الطب والصيدلة", engineering: "الهندسة والتقنية", thought: "الفكر والفلسفة", personal: "المساحة الشخصية", academic: "أكاديمي", general: "عام" }
     }
@@ -38,7 +40,8 @@
   const primaryLanguage = item.primaryLanguage === "ar" || item.primaryLanguage === "en"
     ? item.primaryLanguage
     : (/[٠-٩\u0600-\u06FF]/.test(item.contentMarkdown || "") ? "ar" : "en");
-  const translationAvailable = Boolean(String(item.secondLanguage || "").trim());
+  const translationAvailable = Boolean(item.translations && item.translations.ar && item.translations.en)
+    || Boolean(String(item.secondLanguage || "").trim());
   let language = readLanguage();
   const byId = (id) => document.getElementById(id);
   const safeText = (node, value) => { if (node) node.textContent = value == null ? "" : String(value); };
@@ -161,7 +164,15 @@
     const t = labels[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
-    document.title = String(item.title) + " — Ahmad Sadek";
+    const bundle = item.translations && item.translations[language];
+    const showingLegacyTranslation = !bundle && language !== primaryLanguage && Boolean(String(item.secondLanguage || "").trim());
+    const localized = bundle && typeof bundle === "object"
+      ? { ...item, ...bundle }
+      : { ...item, contentMarkdown: showingLegacyTranslation ? item.secondLanguage : item.contentMarkdown };
+    const showingRequestedLanguage = Boolean(bundle) || language === primaryLanguage || showingLegacyTranslation;
+    const displayLanguage = bundle ? language : primaryLanguage;
+    const bodyLanguage = showingLegacyTranslation ? language : displayLanguage;
+    document.title = String(localized.title || item.title) + " — " + (language === "ar" ? "أحمد صادق" : "Ahmad Sadek");
     document.querySelectorAll("[data-ui]").forEach((node) => {
       const key = node.dataset.ui;
       if (Object.prototype.hasOwnProperty.call(t, key)) safeText(node, t[key]);
@@ -175,48 +186,55 @@
     safeText(byId("linksLabel"), t.links);
     byId("articleSource").replaceChildren();
 
+    safeText(byId("articleTitle"), localized.title || item.title);
+    byId("articleTitle").lang = displayLanguage;
+    byId("articleTitle").dir = displayLanguage === "ar" ? "rtl" : "ltr";
+    safeText(byId("articleSubtitle"), localized.subtitle || "");
+    byId("articleSubtitle").hidden = !String(localized.subtitle || "").trim();
+    byId("articleSubtitle").lang = displayLanguage;
+    byId("articleSubtitle").dir = displayLanguage === "ar" ? "rtl" : "ltr";
+
     typeAndCategory();
     byId("articleMeta").replaceChildren();
     addMeta(t.by, item.author);
     addMeta("", formatDate(item.date));
-    addMeta(t.readingTime, item.readingTime);
-    if (Array.isArray(item.tags) && item.tags.length) addMeta("", item.tags.join(" · "));
+    addMeta(t.readingTime, localized.readingTime || item.readingTime);
+    if (Array.isArray(localized.tags) && localized.tags.length) addMeta("", localized.tags.join(" · "));
 
     const coverURL = safeURL(item.coverImage, "image");
     if (coverURL) {
       byId("articleCover").src = coverURL;
+      byId("articleCover").alt = localized.title || item.title;
       byId("articleCover").hidden = false;
     } else {
       byId("articleCover").hidden = true;
     }
 
-    const showingTranslation = translationAvailable && language !== primaryLanguage;
-    const body = showingTranslation ? item.secondLanguage : item.contentMarkdown;
     const abstractSection = byId("articleAbstract");
-    if (item.abstract && !showingTranslation) {
-      renderMarkdown("abstractContent", item.abstract, primaryLanguage);
+    if (!showingLegacyTranslation && String(localized.abstract || "").trim()) {
+      renderMarkdown("abstractContent", localized.abstract, displayLanguage);
       abstractSection.hidden = false;
     } else {
       abstractSection.hidden = true;
     }
 
-    if (!translationAvailable && language !== primaryLanguage) {
+    renderMarkdown("articleContent", localized.contentMarkdown || "", bodyLanguage);
+    if (!showingRequestedLanguage) {
       const note = document.createElement("p");
       note.className = "small-meta";
       note.dir = "auto";
       safeText(note, t.translationFallback);
-      byId("articleContent").replaceChildren(note);
-      const bodyHtml = document.createElement("div");
-      bodyHtml.lang = primaryLanguage;
-      bodyHtml.dir = primaryLanguage === "ar" ? "rtl" : "ltr";
-      bodyHtml.innerHTML = window.ArchiveMarkdown.render(body || "");
-      byId("articleContent").appendChild(bodyHtml);
-    } else {
-      renderMarkdown("articleContent", body, showingTranslation ? language : primaryLanguage);
+      byId("articleContent").prepend(note);
+    } else if (localized.machineTranslated) {
+      const note = document.createElement("p");
+      note.className = "small-meta translation-note";
+      note.dir = bodyLanguage === "ar" ? "rtl" : "ltr";
+      safeText(note, t.machineTranslation);
+      byId("articleContent").prepend(note);
     }
 
-    if (item.referencesMarkdown) {
-      renderMarkdown("referencesContent", item.referencesMarkdown, primaryLanguage);
+    if (String(localized.referencesMarkdown || "").trim()) {
+      renderMarkdown("referencesContent", localized.referencesMarkdown, displayLanguage);
       byId("articleReferences").hidden = false;
     } else {
       byId("articleReferences").hidden = true;

@@ -27,12 +27,21 @@ async function main() {
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/articles/3/");
     assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr");
 
+    const articleData = JSON.parse(await page.locator("#articleData").textContent());
     await page.locator('[data-lang="ar"]').click();
     assert.equal(await page.locator("html").getAttribute("dir"), "rtl", "Arabic interface should use RTL direction");
-    assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "English manuscript direction should not flip with UI language");
-    assert.match(await page.locator("#articleContent").innerText(), /Curiosity often begins/);
+    if (articleData.translations && articleData.translations.ar) {
+      assert.equal(await page.locator("#articleTitle").innerText(), articleData.translations.ar.title, "article title should use its Arabic translation");
+      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "rtl", "translated Arabic title should use RTL direction");
+      assert.equal(await page.locator("#articleContent > div").getAttribute("lang"), "ar", "translated body should declare Arabic");
+      assert.match(await page.locator("#articleContent").innerText(), /ترجمة آلية/, "machine translation should be disclosed to readers");
+    } else {
+      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "legacy untranslated articles should retain their source direction");
+      assert.match(await page.locator("#articleContent").innerText(), /Curiosity often begins/);
+    }
     await page.locator('[data-lang="en"]').click();
     assert.equal(await page.locator("html").getAttribute("dir"), "ltr");
+    assert.equal(await page.locator("#articleTitle").innerText(), "The Discipline of Curiosity", "switching back should restore the original English text");
 
     await page.locator(".article-back").click();
     await page.waitForURL("**/#archive");
@@ -74,7 +83,14 @@ async function main() {
     assert.equal(await arabic.locator("#homeTitle .first-name").innerText(), "أحمد");
     assert.equal(await arabic.locator("#homeTitle .last-name").innerText(), "صادق");
     assert.doesNotMatch(await arabic.locator("#homeTitle").innerText(), /صادق\./, "the Arabic name should not carry an awkward trailing Latin period");
-    assert.match(await arabic.locator("#featuredList").innerText(), /The Discipline of Curiosity/);
+    const arabicArchive = await arabic.evaluate(async () => (await fetch("/archive.json")).json());
+    const featuredArticle = arabicArchive.items.find((item) => Number(item.id) === 3);
+    const arabicFeaturedTitle = featuredArticle && featuredArticle.translations && featuredArticle.translations.ar
+      ? featuredArticle.translations.ar.title : "The Discipline of Curiosity";
+    assert.ok(
+      (await arabic.locator("#featuredList").innerText()).includes(arabicFeaturedTitle),
+      "featured entries should use the current interface language when a translation is available"
+    );
     await arabic.locator('[data-lang="en"]').click();
     await arabic.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "en", "switching to English should use the English canonical route");

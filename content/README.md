@@ -40,6 +40,14 @@ Put the complete work in `content.md`. There is no GitHub Issue body limit on th
 
 Optional sibling Markdown files may be referenced with `secondLanguageFile` and `referencesFile`, each containing a simple filename such as `content-en.md` or `references.md`. Optional `attachments` and `links` accept external HTTPS URLs. Upload images and documents under `assets/uploads/` and link to them in the manuscript using site-root paths.
 
+## Automatic Arabic–English versions
+
+Every published item is prepared in both Arabic and English. The language selected for the manuscript remains the canonical original; GitHub Actions generates the other language with the open-source M2M100 neural translation model. The generated version is stored with the archive data, so switching the site language does not wait for a live translation service.
+
+The original text is preserved. A manually supplied second-language manuscript takes precedence over automatic translation for the article body. Automatically translated text is marked as machine-translated in the reader. Please review medical, pharmaceutical, scientific, legal, and other specialist terminology before relying on a translated version.
+
+Translations are generated during publication builds and reused when the original manuscript has not changed.
+
 ## Publish, edit, and unpublish
 
 - **Draft:** leave `"status": "draft"`.

@@ -61,6 +61,7 @@
       relatedLinks: "Related links", openFile: "Open / download", articleSource: "View source on GitHub",
       readingTime: "Reading time", by: "By",
       translationFallback: "This entry is shown in its original language because a translation is not available.",
+      machineTranslation: "Machine translation — review recommended.",
       categories: {
         pharmacy: "Medicine & Pharmacy", engineering: "Engineering & Technology",
         thought: "Thought & Philosophy", personal: "Personal", academic: "Academic", general: "General"
@@ -123,6 +124,7 @@
       relatedLinks: "روابط ذات صلة", openFile: "فتح / تنزيل", articleSource: "عرض المصدر على GitHub",
       readingTime: "وقت القراءة", by: "بقلم",
       translationFallback: "هذه المادة معروضة بلغتها الأصلية لعدم توفر ترجمة.",
+      machineTranslation: "ترجمة آلية — يُنصح بمراجعة النص والمصطلحات.",
       categories: {
         pharmacy: "الطب والصيدلة", engineering: "الهندسة والتقنية",
         thought: "الفكر والفلسفة", personal: "المساحة الشخصية", academic: "أكاديمي", general: "عام"
@@ -211,6 +213,12 @@
     return section ? hash : "home";
   }
 
+  function localizedFields(item) {
+    if (!item || typeof item !== "object") return {};
+    const bundle = item.translations && item.translations[currentLanguage];
+    return bundle && typeof bundle === "object" ? { ...item, ...bundle } : item;
+  }
+
   function updateDocumentMeta(page, item) {
     const titleMap = {
       home: "homeTitle", about: "aboutTitle", archive: "archiveTitle",
@@ -219,13 +227,14 @@
       thought: "thoughtTitle", personal: "personalTitle"
     };
     const titleElement = document.getElementById(titleMap[page] || "homeTitle");
-    const heading = item ? item.title : (titleElement ? titleElement.textContent : "Ahmad Sadek");
+    const localized = item ? localizedFields(item) : null;
+    const heading = localized ? (localized.title || item.title) : (titleElement ? titleElement.textContent : "Ahmad Sadek");
     const siteName = currentLanguage === "ar" ? "أحمد صادق" : "Ahmad Sadek";
     document.title = page === "home"
       ? (currentLanguage === "ar" ? "أحمد صادق — الأرشيف الشخصي" : "Ahmad Sadek — Personal Archive")
       : (heading || siteName) + " — " + siteName;
-    const description = item
-      ? (item.subtitle || item.abstract || item.title)
+    const description = localized
+      ? (localized.subtitle || localized.abstract || localized.title || item.title)
       : (page === "home" ? t("heroLead") : (document.querySelector('[data-page="' + CSS.escape(page) + '"] .page-intro')?.textContent || t("manifesto")));
     const desc = document.querySelector('meta[name="description"]');
     const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -290,6 +299,10 @@
     return /[\u0600-\u06FF]/.test(item?.contentMarkdown || "") ? "ar" : "en";
   }
 
+  function hasLocalizedVersion(item, language = currentLanguage) {
+    return Boolean(item && item.translations && item.translations[language]);
+  }
+
   function displayDate(value) {
     if (!value) return "";
     const match = String(value).match(/^\d{4}-\d{2}-\d{2}$/);
@@ -311,18 +324,22 @@
   }
   function searchMatches(item, query) {
     if (!query) return true;
+    const localized = localizedFields(item);
     const blob = [
-      item.title, item.subtitle, item.abstract, item.contentMarkdown, item.referencesMarkdown,
-      item.type, item.category, item.language, ...(item.tags || []), ...(item.technologies || [])
+      localized.title, localized.subtitle, localized.abstract, localized.contentMarkdown,
+      localized.referencesMarkdown, localized.type, localized.category, item.language,
+      ...(localized.tags || []), ...(localized.technologies || []),
+      item.title, item.subtitle, item.contentMarkdown
     ].join(" ").toLocaleLowerCase(currentLanguage === "ar" ? "ar" : "en");
     return blob.includes(query.toLocaleLowerCase(currentLanguage === "ar" ? "ar" : "en"));
   }
 
   function createEntry(item) {
+    const localized = localizedFields(item);
     const link = document.createElement("a");
     link.className = "entry";
     link.href = "/articles/" + encodeURIComponent(String(item.id)) + "/";
-    link.setAttribute("aria-label", item.title + " — " + typeLabel(item.type));
+    link.setAttribute("aria-label", (localized.title || item.title) + " — " + typeLabel(item.type));
 
     const type = document.createElement("div");
     type.className = "entry-type";
@@ -330,10 +347,14 @@
 
     const details = document.createElement("div");
     const heading = document.createElement("h2");
-    safeText(heading, item.title);
+    safeText(heading, localized.title || item.title);
+    heading.lang = currentLanguage;
+    heading.dir = currentLanguage === "ar" ? "rtl" : "ltr";
     details.appendChild(heading);
     const summary = document.createElement("p");
-    safeText(summary, item.subtitle || item.abstract || "");
+    safeText(summary, localized.subtitle || localized.abstract || "");
+    summary.lang = currentLanguage;
+    summary.dir = currentLanguage === "ar" ? "rtl" : "ltr";
     details.appendChild(summary);
 
     const date = document.createElement("div");
@@ -389,7 +410,10 @@
       const label = document.createElement("small");
       safeText(label, typeLabel(item.type) + (categoryLabel(item.category) ? " · " + categoryLabel(item.category) : ""));
       const heading = document.createElement("h3");
-      safeText(heading, item.title);
+      const localized = localizedFields(item);
+      safeText(heading, localized.title || item.title);
+      heading.lang = currentLanguage;
+      heading.dir = currentLanguage === "ar" ? "rtl" : "ltr";
       link.append(label, heading);
       fragment.appendChild(link);
     });
@@ -531,6 +555,15 @@
       return;
     }
 
+    const primaryLanguage = primaryLanguageFor(item);
+    const localized = localizedFields(item);
+    const hasBundle = hasLocalizedVersion(item);
+    const legacyTranslation = !hasBundle && currentLanguage !== primaryLanguage && Boolean(String(item.secondLanguage || "").trim());
+    const hasTranslation = hasBundle || legacyTranslation;
+    const displayLanguage = hasBundle ? currentLanguage : primaryLanguage;
+    const legacyBody = legacyTranslation ? item.secondLanguage : item.contentMarkdown;
+    const bodyLanguage = legacyTranslation ? currentLanguage : displayLanguage;
+
     host.replaceChildren();
     const back = document.createElement("a");
     back.className = "article-back";
@@ -543,21 +576,20 @@
     safeText(type, typeLabel(item.type) + (categoryLabel(item.category) ? " · " + categoryLabel(item.category) : ""));
     host.appendChild(type);
 
-    const articlePrimaryLanguage = primaryLanguageFor(item);
     const heading = document.createElement("h1");
     heading.id = "articleTitle";
-    heading.lang = articlePrimaryLanguage;
-    heading.dir = articlePrimaryLanguage;
-    safeText(heading, item.title);
+    heading.lang = displayLanguage;
+    heading.dir = displayLanguage === "ar" ? "rtl" : "ltr";
+    safeText(heading, localized.title || item.title);
     host.setAttribute("aria-labelledby", "articleTitle");
     host.appendChild(heading);
 
-    if (item.subtitle) {
+    if (localized.subtitle || item.subtitle) {
       const subtitle = document.createElement("p");
       subtitle.className = "article-subtitle";
-      subtitle.lang = articlePrimaryLanguage;
-      subtitle.dir = articlePrimaryLanguage;
-      safeText(subtitle, item.subtitle);
+      subtitle.lang = displayLanguage;
+      subtitle.dir = displayLanguage === "ar" ? "rtl" : "ltr";
+      safeText(subtitle, localized.subtitle || item.subtitle);
       host.appendChild(subtitle);
     }
 
@@ -565,37 +597,43 @@
     meta.className = "article-meta";
     addMeta(meta, t("by"), item.author);
     addMeta(meta, "", displayDate(item.date));
-    addMeta(meta, t("readingTime"), item.readingTime);
-    if (Array.isArray(item.tags) && item.tags.length) addMeta(meta, "", item.tags.join(" · "));
+    addMeta(meta, t("readingTime"), localized.readingTime || item.readingTime);
+    if (Array.isArray(localized.tags || item.tags) && (localized.tags || item.tags).length) {
+      addMeta(meta, "", (localized.tags || item.tags).join(" · "));
+    }
     host.appendChild(meta);
 
-    const coverURL = safeURL(item.coverImage, "image");
-    if (coverURL) {
-      const cover = document.createElement("img");
-      cover.className = "article-cover";
-      cover.src = coverURL;
-      cover.alt = item.title;
-      cover.loading = "lazy";
-      cover.decoding = "async";
-      host.appendChild(cover);
-    }
-
-    const primaryLanguage = articlePrimaryLanguage;
-    const hasTranslation = Boolean(String(item.secondLanguage || "").trim());
-    const showingTranslation = hasTranslation && currentLanguage !== primaryLanguage;
-    const body = showingTranslation ? item.secondLanguage : item.contentMarkdown;
-    if (!hasTranslation && currentLanguage !== primaryLanguage) {
+    if (localized.machineTranslated) {
+      const notice = document.createElement("p");
+      notice.className = "small-meta translation-note";
+      notice.dir = displayLanguage === "ar" ? "rtl" : "ltr";
+      safeText(notice, t("machineTranslation"));
+      host.appendChild(notice);
+    } else if (!hasTranslation && currentLanguage !== primaryLanguage) {
       const note = document.createElement("p");
       note.className = "small-meta";
       note.dir = "auto";
       safeText(note, t("translationFallback"));
       host.appendChild(note);
     }
-    const abstractBlock = showingTranslation ? null : renderMarkdownBlock(t("abstract"), item.abstract, primaryLanguage);
+
+    const coverURL = safeURL(item.coverImage, "image");
+    if (coverURL) {
+      const cover = document.createElement("img");
+      cover.className = "article-cover";
+      cover.src = coverURL;
+      cover.alt = localized.title || item.title;
+      cover.loading = "lazy";
+      cover.decoding = "async";
+      host.appendChild(cover);
+    }
+
+    const abstractBlock = legacyTranslation ? null : renderMarkdownBlock(t("abstract"), localized.abstract || "", displayLanguage);
     if (abstractBlock) host.appendChild(abstractBlock);
-    const bodyBlock = renderMarkdownBlock("", body, showingTranslation ? currentLanguage : primaryLanguage);
+    const body = hasBundle ? (localized.contentMarkdown || item.contentMarkdown) : legacyBody;
+    const bodyBlock = renderMarkdownBlock("", body, bodyLanguage);
     if (bodyBlock) host.appendChild(bodyBlock);
-    const refsBlock = renderMarkdownBlock(t("references"), item.referencesMarkdown, primaryLanguage);
+    const refsBlock = renderMarkdownBlock(t("references"), localized.referencesMarkdown || "", displayLanguage);
     if (refsBlock) host.appendChild(refsBlock);
 
     renderAttachments(host, item);

@@ -846,7 +846,20 @@ def write_sitemap(items: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
+    previous_data: dict[str, Any] = {}
+    if OUTPUT.is_file():
+        try:
+            previous_data = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            previous_data = {}
+
     data = build_archive(fetch_issues(), build_content_items())
+    try:
+        from .translate_archive import enrich_archive_translations
+    except ImportError:
+        from translate_archive import enrich_archive_translations
+    data = enrich_archive_translations(data, previous_data)
+
     serialized = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
     OUTPUT.write_text(serialized, encoding="utf-8")
     write_article_pages(data["items"])

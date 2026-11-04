@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Validate Python syntax
-        run: python -m py_compile scripts/build_archive.py tests/test_build_archive.py
+        run: python -m py_compile scripts/build_archive.py scripts/translate_archive.py tests/test_build_archive.py tests/test_translate_archive.py
       - name: Run archive security tests
         run: python -m unittest discover -s tests -v
       - name: Validate published archive JSON

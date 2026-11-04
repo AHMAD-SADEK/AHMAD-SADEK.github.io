@@ -5,6 +5,13 @@ on:
     types: [opened, edited, closed, reopened, labeled, unlabeled]
   push:
     branches: [main]
+    paths:
+      - "content/**"
+      - "assets/uploads/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/workflows/build-approved-archive.yml"
+      - "scripts/**"
+      - "tests/**"
   workflow_dispatch:
 
 permissions:
@@ -20,7 +27,7 @@ jobs:
   build:
     if: github.event_name != 'issues' || (github.event.issue.user.login == 'AHMAD-SADEK' && (github.event.sender.login == 'AHMAD-SADEK' || github.event.action == 'closed' || github.event.action == 'reopened'))
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 60
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -30,10 +37,23 @@ jobs:
           python-version: "3.12"
       - name: Test archive publication rules
         run: python -m unittest discover -s tests -v
-      - name: Generate approved archive
+      - name: Cache local translation model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: ${{ runner.os }}-m2m100-418m-v1
+
+      - name: Install local neural translation runtime
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+          python -m pip install "transformers>=4.48,<5" sentencepiece
+
+      - name: Generate bilingual archive with local neural translation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          HF_HOME: ~/.cache/huggingface
         run: python scripts/build_archive.py
       - name: Commit changed archive data (retry concurrent updates)
         id: publish
