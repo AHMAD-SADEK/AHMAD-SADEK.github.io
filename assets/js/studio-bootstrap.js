@@ -14,6 +14,13 @@
     }));
     parsed.querySelectorAll("script").forEach((script) => script.remove());
     document.replaceChild(parsed.documentElement, document.documentElement);
+    const retryScript = document.createElement("script");
+    retryScript.src = "/assets/js/studio-retry.js";
+    await new Promise((resolve, reject) => {
+      retryScript.onload = resolve;
+      retryScript.onerror = () => reject(new Error("تعذر تحميل آلية إعادة المحاولة الآمنة."));
+      document.body.appendChild(retryScript);
+    });
     for (const spec of scripts) {
       const script = document.createElement("script");
       if (spec.type) script.type = spec.type;
