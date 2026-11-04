@@ -129,6 +129,60 @@ async function main() {
     await studio.locator("#connect").click();
     assert.match(await studio.locator("#loginStatus").innerText(), /أدخل رمز الوصول أولاً/, "the studio should validate an empty token without attempting an API write");
     assert.equal(await studio.locator("#workspace").isHidden(), true, "the publishing workspace should remain locked before authentication");
+    assert.equal(await studio.evaluate(() => window.__archiveStudioRetryInstalled === true), true, "the studio should install its automatic fast-forward retry handler");
+
+    let patchCalls = 0;
+    const treeCalls = [];
+    const commitCalls = [];
+    await studio.route("https://api.github.com/**", async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      const method = request.method();
+      const body = method === "GET" ? null : request.postDataJSON();
+      if (url.pathname.endsWith("/git/trees") && method === "POST") {
+        treeCalls.push(body);
+        await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ sha: treeCalls.length === 1 ? "first-tree" : "rebased-tree" }) });
+        return;
+      }
+      if (url.pathname.endsWith("/git/commits") && method === "POST") {
+        commitCalls.push(body);
+        await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ sha: commitCalls.length === 1 ? "first-commit" : "rebased-commit" }) });
+        return;
+      }
+      if (url.pathname.endsWith("/git/ref/heads/main") && method === "GET") {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ object: { sha: "new-main-head" } }) });
+        return;
+      }
+      if (url.pathname.endsWith("/git/commits/new-main-head") && method === "GET") {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ tree: { sha: "new-main-tree" } }) });
+        return;
+      }
+      if (url.pathname.endsWith("/git/refs/heads/main") && method === "PATCH") {
+        patchCalls += 1;
+        if (patchCalls === 1) {
+          await route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ message: "Update is not a fast forward" }) });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ref: "refs/heads/main", object: { sha: "rebased-commit" } }) });
+        }
+        return;
+      }
+      await route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ message: "Unexpected mocked API request: " + method + " " + url.pathname }) });
+    });
+    const retrySucceeded = await studio.evaluate(async () => {
+      const base = "https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io";
+      const headers = { "Content-Type": "application/json", "Authorization": "Bearer test-token" };
+      await fetch(base + "/git/trees", { method: "POST", headers, body: JSON.stringify({ base_tree: "old-tree", tree: [{ path: "content/writing/test/content.md", mode: "100644", type: "blob", sha: "content-blob" }] }) });
+      await fetch(base + "/git/commits", { method: "POST", headers, body: JSON.stringify({ message: "Save draft: Retry test", tree: "first-tree", parents: ["old-head"] }) });
+      const result = await fetch(base + "/git/refs/heads/main", { method: "PATCH", headers, body: JSON.stringify({ sha: "first-commit", force: false }) });
+      return result.ok;
+    });
+    assert.equal(retrySucceeded, true, "a non-fast-forward update should be rebased and retried automatically");
+    assert.equal(patchCalls, 2, "the ref update should be retried after a simulated race");
+    assert.equal(treeCalls.length, 2, "the retry should rebuild a Git tree on the latest main tree");
+    assert.equal(treeCalls[1].base_tree, "new-main-tree", "the retry should preserve intervening main-branch updates");
+    assert.deepEqual(treeCalls[1].tree, treeCalls[0].tree, "the retry should reapply the exact saved file changes");
+    assert.equal(commitCalls.length, 2, "the retry should create a new commit");
+    assert.deepEqual(commitCalls[1].parents, ["new-main-head"], "the retry commit should use the newest main commit as its parent");
     await studio.close();
 
     assert.deepEqual(pageErrors, [], "the main, article, and Arabic landing pages should not throw uncaught JavaScript errors");
