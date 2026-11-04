@@ -12,6 +12,14 @@ from scripts.translate_archive import (
 class MockTranslator:
     def __init__(self):
         self.calls = []
+        self.batch_calls = []
+
+    def _token_chunks(self, text):
+        return [text]
+
+    def translate_many(self, texts, source, target):
+        self.batch_calls.append((list(texts), source, target))
+        return [f"[{source}>{target}] {text}" for text in texts]
 
     def translate_text(self, text, source, target):
         self.calls.append((text, source, target))
@@ -57,6 +65,16 @@ class TranslationArchiveTests(unittest.TestCase):
         self.assertIn("[[en>ar] reference link](https://example.org/paper)", result)
         self.assertIn(tick + "x = 2" + tick, result)
         self.assertIn(fence + "python\nprint('keep this code')\n" + fence, result)
+        self.assertEqual(len(translator.batch_calls), 1, "Markdown prose should be translated in a single batched pass")
+        self.assertGreater(len(translator.batch_calls[0][0]), 1, "separate paragraphs should be grouped for batch inference")
+
+    def test_markdown_tables_keep_cells_separators_and_headers(self):
+        translator = MockTranslator()
+        source = "| Name | Description |\n| --- | --- |\n| Tablet | Solid dosage form |\n"
+        result = translate_markdown(source, translator, "en", "ar")
+        self.assertIn("| [en>ar] Name | [en>ar] Description |", result)
+        self.assertIn("| --- | --- |", result)
+        self.assertIn("| [en>ar] Tablet | [en>ar] Solid dosage form |", result)
 
     def test_enrichment_keeps_source_and_creates_both_language_views(self):
         item = sample_item()
