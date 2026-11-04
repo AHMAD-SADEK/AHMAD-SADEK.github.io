@@ -20,7 +20,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: build-approved-archive
+  group: build-approved-archive-translations-v2
   cancel-in-progress: false
 
 jobs:
