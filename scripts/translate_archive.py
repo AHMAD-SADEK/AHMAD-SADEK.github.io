@@ -124,71 +124,144 @@ PROTECTED_RE = re.compile(
 )
 
 
-def _translate_inline(text: str, translator: NeuralTranslator, source: str, target: str) -> str:
-    output: list[str] = []
+def _plan_inline_translation(
+    text: str,
+    tasks: list[str],
+    translator: NeuralTranslator,
+    source: str,
+    target: str,
+) -> list[tuple[str, int, int] | tuple[str, str]]:
+    """Create a literal/translated template without running the model yet."""
+    parts: list[tuple[str, int, int] | tuple[str, str]] = []
     cursor = 0
+
+    def add_text(value: str) -> None:
+        if not value:
+            return
+        chunker = getattr(translator, "_token_chunks", None)
+        chunks = chunker(value) if callable(chunker) else [value]
+        chunks = [chunk for chunk in chunks if chunk]
+        if not chunks:
+            return
+        offset = len(tasks)
+        tasks.extend(chunks)
+        parts.append(("translated", offset, len(chunks)))
+
     for match in PROTECTED_RE.finditer(text):
         if match.start() > cursor:
-            output.append(translator.translate_text(text[cursor:match.start()], source, target))
+            add_text(text[cursor:match.start()])
         token = match.group(0)
         link = re.fullmatch(r"(!?)\[([^\]]*)\]\(([^)\s]+)(.*)\)", token)
+        emphasis = re.fullmatch(r"(\*\*|__|~~|\*|_)(.+?)\1", token, re.S)
         if link:
-            label = translator.translate_text(link.group(2), source, target) if link.group(2).strip() else link.group(2)
-            output.append(f"{link.group(1)}[{label}]({link.group(3)}{link.group(4)})")
+            parts.append(("literal", link.group(1) + "["))
+            if link.group(2):
+                add_text(link.group(2))
+            parts.append(("literal", "](" + link.group(3) + link.group(4) + ")"))
+        elif emphasis:
+            parts.append(("literal", emphasis.group(1)))
+            add_text(emphasis.group(2))
+            parts.append(("literal", emphasis.group(1)))
         else:
-            output.append(token)
+            parts.append(("literal", token))
         cursor = match.end()
     if cursor < len(text):
-        output.append(translator.translate_text(text[cursor:], source, target))
+        add_text(text[cursor:])
+    return parts
+
+
+def _render_translation_plan(
+    parts: list[tuple[str, int, int] | tuple[str, str]],
+    translated_chunks: list[str],
+) -> str:
+    output: list[str] = []
+    for part in parts:
+        if part[0] == "literal":
+            output.append(part[1])
+        else:
+            _, offset, count = part
+            output.append(" ".join(translated_chunks[offset:offset + count]).strip())
     return "".join(output)
 
 
-def _is_table_separator(line: str) -> bool:
-    if "|" not in line:
-        return False
-    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
-
-
 def translate_markdown(text: str, translator: NeuralTranslator, source: str, target: str) -> str:
-    """Translate prose while retaining Markdown structure, URLs, code and math."""
+    """Translate Markdown prose in batches while retaining formatting and protected spans."""
+    tokenizer = getattr(translator, "tokenizer", None)
+    if tokenizer is not None:
+        tokenizer.src_lang = source
+
     lines = str(text or "").splitlines(keepends=True)
     output: list[str] = []
+    tasks: list[str] = []
+    plans: list[list[tuple[str, int, int] | tuple[str, str]] | None] = []
     fence: str | None = None
+
+    def add_line_plan(value: str) -> list[tuple[str, int, int] | tuple[str, str]]:
+        return _plan_inline_translation(value, tasks, translator, source, target)
+
     for raw_line in lines:
         line = raw_line.rstrip("\r\n")
         ending = raw_line[len(line):]
         fence_match = re.match(r"^\s{0,3}(\x60{3,}|~{3,})", line)
         if fence is not None:
             output.append(raw_line)
+            plans.append(None)
             if fence_match and fence_match.group(1)[0] == fence[0] and len(fence_match.group(1)) >= len(fence):
                 fence = None
             continue
         if fence_match:
             fence = fence_match.group(1)
             output.append(raw_line)
+            plans.append(None)
             continue
-        if not line.strip() or re.fullmatch(r"\s*(?:-{3,}|\*{3,}|_{3,})\s*", line) or _is_table_separator(line):
+        if (
+            not line.strip()
+            or re.fullmatch(r"\s*(?:-{3,}|\*{3,}|_{3,})\s*", line)
+            or _is_table_separator(line)
+        ):
             output.append(raw_line)
+            plans.append(None)
             continue
         if "|" in line and line.strip().startswith("|"):
             cells = line.split("|")
-            for index in range(len(cells)):
-                if cells[index].strip():
-                    leading = cells[index][:len(cells[index]) - len(cells[index].lstrip())]
-                    trailing = cells[index][len(cells[index].rstrip()):]
-                    core = cells[index].strip()
-                    cells[index] = leading + _translate_inline(core, translator, source, target) + trailing
-            output.append("|".join(cells) + ending)
+            table_template: list[tuple[str, int, int] | tuple[str, str]] = []
+            for index, cell in enumerate(cells):
+                if index:
+                    table_template.append(("literal", "|"))
+                core = cell.strip()
+                if not core:
+                    continue
+                leading = cell[:len(cell) - len(cell.lstrip())]
+                trailing = cell[len(cell.rstrip()):]
+                table_template.append(("literal", leading))
+                table_template.extend(add_line_plan(core))
+                table_template.append(("literal", trailing))
+            output.append("")
+            plans.append(table_template)
             continue
         prefix = re.match(r"^(\s{0,3}(?:#{1,6}\s+|>\s*|[-+*]\s+|\d+[.)]\s+)?)(.*)$", line)
         if prefix:
-            content = prefix.group(2)
-            output.append(prefix.group(1) + _translate_inline(content, translator, source, target) + ending)
+            plan = [("literal", prefix.group(1))] + add_line_plan(prefix.group(2))
         else:
-            output.append(_translate_inline(line, translator, source, target) + ending)
-    return "".join(output)
+            plan = add_line_plan(line)
+        plans.append([("line", len(output), 0)] + plan)
+        output.append(ending)
 
+    translated = translator.translate_many(tasks, source, target) if tasks else []
+    for index, plan in enumerate(plans):
+        if plan is None:
+            continue
+        if plan and plan[0][0] == "line":
+            _, output_index, _ = plan[0]
+            rendered = _render_translation_plan(plan[1:], translated)
+            ending = lines[output_index][len(lines[output_index].rstrip("\r\n")):]
+            output[output_index] = rendered + ending
+        else:
+            rendered = _render_translation_plan(plan, translated)
+            raw = lines[index]
+            ending = raw[len(raw.rstrip("\r\n")):]
+            output[index] = rendered + ending
+    return "".join(output)
 
 def _localized_reading_time(value: str, language: str) -> str:
     match = re.search(r"\d+", value)
