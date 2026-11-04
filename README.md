@@ -4,6 +4,20 @@ A bilingual (Arabic/English) personal archive built as a lightweight static site
 
 ## How publishing works
 
+Long-form publications are stored directly in the repository as Markdown files. This avoids the 65,536-character GitHub Issue body limit while keeping GitHub as the only content store and GitHub Pages as the only hosting platform.
+
+### Publish a long article, research paper, or other work
+
+1. Open the repository and choose **Add file → Create new file**.
+2. Create `content/writing/my-article/metadata.json` (replace the type and slug as appropriate).
+3. Paste the compact JSON metadata using the template in `content/README.md`.
+4. Create `content/writing/my-article/content.md` and paste the complete manuscript. Keep headings, citations, references, and appendices in this one Markdown file in the order you wrote them.
+5. Keep `"status": "draft"` while preparing the work. Change it to `"published"` when ready, then commit to `main`.
+6. GitHub Actions validates the content and regenerates the public archive, standalone article page, and sitemap. To unpublish, change the status back to `draft`.
+
+For PDFs and images, use **Add file → Upload files** and place them under `assets/uploads/`. Link them from the manuscript using site-root paths, for example `/assets/uploads/my-article/figure-1.png`. GitHub Issues remain supported for existing publications and shorter submissions; existing entries are not migrated or discarded.
+
+
 1. Open the repository's **Issues** page and choose the appropriate Issue Form (Article, Research, Book, Project, Idea, or Personal).
 2. Complete the title, category, language, content, and any metadata or file links.
 3. New submissions default to **Draft**. Keep the item as a draft while writing and reviewing it.
@@ -27,11 +41,13 @@ Links entered under **PDF / Files** appear as attachments. PDF attachments inclu
 - `assets/js/app.js` — bilingual navigation, search, and archive lists
 - `assets/js/article.js` — standalone article-page rendering and language switching
 - `assets/js/markdown.js` — safe Markdown renderer
+- `content/<type>/<slug>/metadata.json` and `content.md` — repository-native publication records and full-length manuscripts
+- `assets/uploads/` — repository-hosted publication attachments
 - `archive.json` — generated public content consumed by the archive
 - `articles/<issue-number>/index.html` — generated, crawlable article permalinks with per-article metadata
 - `sitemap.xml` and `robots.txt` — search discovery files
 - `favicon.svg` — reusable site icon
-- `scripts/build_archive.py` — fetches approved issues, generates article pages, and updates the sitemap
+- `scripts/build_archive.py` — combines approved legacy Issues and published repository Markdown records, generates article pages, and updates the sitemap
 - `.github/workflows/build-approved-archive.yml` — refreshes the archive when an issue changes
 - `.github/ISSUE_TEMPLATE/` — content submission forms
 - `tests/test_build_archive.py` — publication-policy, parser, article-page, sitemap, and URL-validation tests
