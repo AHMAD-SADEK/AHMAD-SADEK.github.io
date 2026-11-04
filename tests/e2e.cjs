@@ -138,10 +138,19 @@ async function main() {
       const request = route.request();
       const url = new URL(request.url());
       const method = request.method();
+      const corsHeaders = {
+        "access-control-allow-origin": "*",
+        "access-control-allow-headers": "Authorization, Content-Type, Accept, X-GitHub-Api-Version",
+        "access-control-allow-methods": "GET, POST, PATCH, OPTIONS"
+      };
+      if (method === "OPTIONS") {
+        await route.fulfill({ status: 204, headers: corsHeaders });
+        return;
+      }
       const body = method === "GET" ? null : request.postDataJSON();
       if (url.pathname.endsWith("/git/trees") && method === "POST") {
         treeCalls.push(body);
-        await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ sha: treeCalls.length === 1 ? "first-tree" : "rebased-tree" }) });
+        await route.fulfill({ status: 201, headers: corsHeaders, contentType: "application/json", body: JSON.stringify({ sha: treeCalls.length === 1 ? "first-tree" : "rebased-tree" }) });
         return;
       }
       if (url.pathname.endsWith("/git/commits") && method === "POST") {
@@ -150,7 +159,7 @@ async function main() {
         return;
       }
       if (url.pathname.endsWith("/git/ref/heads/main") && method === "GET") {
-        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ object: { sha: "new-main-head" } }) });
+        await route.fulfill({ status: 200, headers: corsHeaders, contentType: "application/json", body: JSON.stringify({ object: { sha: "new-main-head" } }) });
         return;
       }
       if (url.pathname.endsWith("/git/commits/new-main-head") && method === "GET") {
@@ -160,13 +169,13 @@ async function main() {
       if (url.pathname.endsWith("/git/refs/heads/main") && method === "PATCH") {
         patchCalls += 1;
         if (patchCalls === 1) {
-          await route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ message: "Update is not a fast forward" }) });
+          await route.fulfill({ status: 422, headers: corsHeaders, contentType: "application/json", body: JSON.stringify({ message: "Update is not a fast forward" }) });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ref: "refs/heads/main", object: { sha: "rebased-commit" } }) });
         }
         return;
       }
-      await route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ message: "Unexpected mocked API request: " + method + " " + url.pathname }) });
+      await route.fulfill({ status: 404, headers: corsHeaders, contentType: "application/json", body: JSON.stringify({ message: "Unexpected mocked API request: " + method + " " + url.pathname }) });
     });
     const retrySucceeded = await studio.evaluate(async () => {
       const base = "https://api.github.com/repos/AHMAD-SADEK/AHMAD-SADEK.github.io";
