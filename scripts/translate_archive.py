@@ -114,6 +114,7 @@ class NeuralTranslator:
         value = str(text or "")
         if not value.strip():
             return value
+        self.tokenizer.src_lang = source
         chunks = self._token_chunks(value)
         return " ".join(self.translate_many(chunks, source, target)).strip()
 

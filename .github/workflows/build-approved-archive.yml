@@ -49,14 +49,12 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
           python -m pip install "transformers>=4.48,<5" sentencepiece
 
-      - name: Generate bilingual archive with local neural translation
+      - name: Commit changed archive data (retry concurrent updates)
+        id: publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           HF_HOME: ~/.cache/huggingface
-        run: python scripts/build_archive.py
-      - name: Commit changed archive data (retry concurrent updates)
-        id: publish
         run: |
           echo "changed=false" >> "$GITHUB_OUTPUT"
           git config user.name "github-actions[bot]"
