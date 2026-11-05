@@ -206,7 +206,7 @@ def build_content_items(content_dir: Path | None = None) -> list[dict[str, Any]]
             "attachments": attachments, "links": extract_links(str(metadata.get("links") or "")),
             "projectStatus": str(metadata.get("projectStatus") or ""),
             "technologies": split_tags(str(metadata.get("technologies") or "")),
-            "sourceUrl": f"https://github.com/{OWNER_LOGIN}/AHMAD-SADEK.github.io/tree/main/{folder.relative_to(ROOT).as_posix()}",
+            "sourceUrl": f"https://github.com/{OWNER_LOGIN}/AHMAD-SADEK.github.io/tree/main/content/{folder.relative_to(root).as_posix()}",
         })
     return items
 
