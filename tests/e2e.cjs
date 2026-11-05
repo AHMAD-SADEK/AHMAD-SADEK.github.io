@@ -15,20 +15,21 @@ async function main() {
     await page.locator("#featuredList .feature").first().waitFor({ state: "visible", timeout: 15000 });
 
     const featuredText = await page.locator("#featuredList").innerText();
-    assert.match(featuredText, /The Discipline of Curiosity/, "the published article should appear in featured content");
+    assert.match(featuredText, /When Protection Becomes Control/, "the published article should appear in featured content");
 
-    const featuredLink = page.locator("#featuredList .feature").filter({ hasText: "The Discipline of Curiosity" }).first();
-    assert.equal(await featuredLink.getAttribute("href"), "/articles/3/", "featured card should use the standalone permalink");
+    const featuredLink = page.locator("#featuredList .feature").filter({ hasText: "When Protection Becomes Control" }).first();
+    assert.equal(await featuredLink.getAttribute("href"), "/articles/3825490848/", "featured card should use the standalone permalink");
     await featuredLink.click();
-    await page.waitForURL("**/articles/3/");
+    await page.waitForURL("**/articles/3825490848/");
     await page.locator("#articleTitle").waitFor({ state: "visible" });
-    assert.equal(await page.locator("#articleTitle").innerText(), "The Discipline of Curiosity");
-    assert.match(await page.locator("#articleContent").innerText(), /Curiosity often begins/);
-    assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/articles/3/");
+    assert.equal(await page.locator("#articleTitle").innerText(), "When Protection Becomes Control");
+    assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/articles/3825490848/");
     assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr");
 
     const articleData = JSON.parse(await page.locator("#articleData").textContent());
     await page.locator('[data-lang="ar"]').click();
+    assert.equal(new URL(page.url()).searchParams.get("lang"), "ar", "switching an article to Arabic should persist the language in its URL");
     assert.equal(await page.locator("html").getAttribute("dir"), "rtl", "Arabic interface should use RTL direction");
     if (articleData.translations && articleData.translations.ar) {
       assert.equal(await page.locator("#articleTitle").innerText(), articleData.translations.ar.title, "article title should use its Arabic translation");
@@ -37,18 +38,18 @@ async function main() {
       assert.match(await page.locator("#articleContent").innerText(), /ترجمة آلية/, "machine translation should be disclosed to readers");
     } else {
       assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "legacy untranslated articles should retain their source direction");
-      assert.match(await page.locator("#articleContent").innerText(), /Curiosity often begins/);
+      assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
     }
     await page.locator('[data-lang="en"]').click();
     assert.equal(await page.locator("html").getAttribute("dir"), "ltr");
-    assert.equal(await page.locator("#articleTitle").innerText(), "The Discipline of Curiosity", "switching back should restore the original English text");
+    assert.equal(await page.locator("#articleTitle").innerText(), "When Protection Becomes Control", "switching back should restore the original English text");
 
     await page.locator(".article-back").click();
     await page.waitForURL("**/#archive");
     await page.locator("#archiveSearch").waitFor({ state: "visible" });
 
     const search = page.locator("#archiveSearch");
-    await search.fill("Curiosity");
+    await search.fill("Protection");
     assert.equal(await page.locator("#archiveList .entry").count(), 1, "archive search should find the article");
     await search.fill("definitely-not-a-real-title");
     assert.match(await page.locator("#archiveList").innerText(), /No entries match your search/);
@@ -84,9 +85,9 @@ async function main() {
     assert.equal(await arabic.locator("#homeTitle .last-name").innerText(), "صادق");
     assert.doesNotMatch(await arabic.locator("#homeTitle").innerText(), /صادق\./, "the Arabic name should not carry an awkward trailing Latin period");
     const arabicArchive = await arabic.evaluate(async () => (await fetch("/archive.json")).json());
-    const featuredArticle = arabicArchive.items.find((item) => Number(item.id) === 3);
+    const featuredArticle = arabicArchive.items.find((item) => Number(item.id) === 3825490848);
     const arabicFeaturedTitle = featuredArticle && featuredArticle.translations && featuredArticle.translations.ar
-      ? featuredArticle.translations.ar.title : "The Discipline of Curiosity";
+      ? featuredArticle.translations.ar.title : "When Protection Becomes Control";
     assert.ok(
       (await arabic.locator("#featuredList").innerText()).includes(arabicFeaturedTitle),
       "featured entries should use the current interface language when a translation is available"
@@ -97,6 +98,13 @@ async function main() {
     await arabic.locator('[data-lang="ar"]').click();
     await arabic.waitForURL((url) => url.pathname === "/ar/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
+    const arabicArticleLink = arabic.locator("#featuredList .feature").first();
+    assert.match(await arabicArticleLink.getAttribute("href"), /\\?lang=ar$/, "Arabic archive links should carry an explicit language");
+    await arabicArticleLink.click();
+    await arabic.waitForURL("**/articles/3825490848/?lang=ar");
+    await arabic.locator("#articleTitle").waitFor({ state: "visible" });
+    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
+    assert.equal(await arabic.locator("#articleTitle").getAttribute("dir"), "rtl", "Arabic article title should use RTL direction");
 
     await arabic.setViewportSize({ width: 1365, height: 900 });
     const desktopHero = await arabic.locator("#homeTitle").evaluate((el) => {
