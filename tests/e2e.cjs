@@ -31,13 +31,10 @@ async function main() {
     await page.locator('[data-lang="ar"]').click();
     assert.equal(new URL(page.url()).searchParams.get("lang"), "ar", "switching an article to Arabic should persist the language in its URL");
     assert.equal(await page.locator("html").getAttribute("dir"), "rtl", "Arabic interface should use RTL direction");
-    if (articleData.translations && articleData.translations.ar) {
-      assert.equal(await page.locator("#articleTitle").innerText(), articleData.translations.ar.title, "article title should use its Arabic translation");
-      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "rtl", "translated Arabic title should use RTL direction");
-      assert.equal(await page.locator("#articleContent").getAttribute("lang"), "ar", "translated body should declare Arabic");
-      assert.match(await page.locator("#articleContent").innerText(), /ترجمة آلية/, "machine translation should be disclosed to readers");
+    if (String(articleData.secondLanguage || "").trim()) {
+      assert.equal(await page.locator("#articleContent").getAttribute("lang"), "ar", "a manually supplied second-language manuscript should declare Arabic");
     } else {
-      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "legacy untranslated articles should retain their source direction");
+      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "an article without a reviewed translation should retain its original title direction");
       assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
       assert.match(await page.locator("#articleContent").innerText(), /لا تتوفر نسخة مترجمة ومراجعة/);
     }
