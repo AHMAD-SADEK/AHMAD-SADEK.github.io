@@ -21,8 +21,7 @@
       brand: "AHMAD SADEK", archive: "Archive", about: "About", back: "← Back to archive",
       abstract: "Abstract", references: "References", attachments: "Attached files",
       links: "Related links", open: "Open / download", source: "View source on GitHub",
-      by: "By", readingTime: "Reading time", translationFallback: "This entry is shown in its original language because a translation is not available.",
-      machineTranslation: "Machine translation — review recommended.",
+      by: "By", readingTime: "Reading time", translationFallback: "No reviewed translation has been provided; the original text is shown.",
       types: { writing: "Writing", research: "Research", book: "Book", project: "Project", idea: "Idea", personal: "Personal" },
       categories: { pharmacy: "Medicine & Pharmacy", engineering: "Engineering & Technology", thought: "Thought & Philosophy", personal: "Personal", academic: "Academic", general: "General" }
     },
@@ -30,8 +29,7 @@
       brand: "أحمد صادق", archive: "الأرشيف", about: "عن أحمد", back: "العودة إلى الأرشيف ←",
       abstract: "الملخص", references: "المراجع", attachments: "الملفات المرفقة",
       links: "روابط ذات صلة", open: "فتح / تنزيل", source: "عرض المصدر على GitHub",
-      by: "بقلم", readingTime: "وقت القراءة", translationFallback: "هذه المادة معروضة بلغتها الأصلية لعدم توفر ترجمة.",
-      machineTranslation: "ترجمة آلية — يُنصح بمراجعة النص والمصطلحات.",
+      by: "بقلم", readingTime: "وقت القراءة", translationFallback: "لا تتوفر نسخة مترجمة ومراجعة لهذه اللغة؛ لذلك يُعرض النص الأصلي.",
       types: { writing: "كتابة", research: "بحث", book: "كتاب", project: "مشروع", idea: "فكرة", personal: "شخصي" },
       categories: { pharmacy: "الطب والصيدلة", engineering: "الهندسة والتقنية", thought: "الفكر والفلسفة", personal: "المساحة الشخصية", academic: "أكاديمي", general: "عام" }
     }
@@ -232,12 +230,6 @@
       note.className = "small-meta";
       note.dir = "auto";
       safeText(note, t.translationFallback);
-      byId("articleContent").prepend(note);
-    } else if (localized.machineTranslated) {
-      const note = document.createElement("p");
-      note.className = "small-meta translation-note";
-      note.dir = bodyLanguage === "ar" ? "rtl" : "ltr";
-      safeText(note, t.machineTranslation);
       byId("articleContent").prepend(note);
     }
 
