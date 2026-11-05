@@ -36,6 +36,9 @@
         document.body.appendChild(script);
       }
     }
+    const languageScript = document.createElement('script');
+    languageScript.src = '/assets/js/studio-language.js';
+    await new Promise((resolve, reject) => { languageScript.onload = resolve; languageScript.onerror = () => reject(new Error('تعذر تحميل إعدادات اللغة.')); document.body.appendChild(languageScript); });
   } catch (error) {
     document.body.textContent = error && error.message ? error.message : "تعذر فتح الاستوديو.";
   }
