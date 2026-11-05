@@ -48,6 +48,8 @@
   const safeURL = (value, kind) => window.ArchiveMarkdown.safeURL(value, kind);
 
   function readLanguage() {
+    const requested = new URLSearchParams(window.location.search).get("lang");
+    if (requested === "ar" || requested === "en") return requested;
     try {
       const saved = localStorage.getItem("ahmad-lang");
       return saved === "ar" || saved === "en" ? saved : primaryLanguage;
@@ -58,6 +60,12 @@
 
   function writeLanguage(value) {
     try { localStorage.setItem("ahmad-lang", value); } catch (_) {}
+  }
+
+  function syncLanguageInURL(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", value);
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
   }
 
   function formatDate(value) {
@@ -251,6 +259,7 @@
       button.addEventListener("click", () => {
         language = button.dataset.lang === "ar" ? "ar" : "en";
         writeLanguage(language);
+        syncLanguageInURL(language);
         render();
       });
     });
