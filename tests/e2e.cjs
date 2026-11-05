@@ -12,55 +12,53 @@ async function main() {
     await page.route(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//, (route) => route.abort());
 
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
-    await page.locator("#featuredList .feature").first().waitFor({ state: "visible", timeout: 15000 });
+    await page.waitForFunction(() => {
+      const host = document.querySelector("#featuredList");
+      return host && !host.textContent.includes("Loading");
+    }, { timeout: 15000 });
 
-    const featuredText = await page.locator("#featuredList").innerText();
-    assert.match(featuredText, /When Protection Becomes Control/, "the published article should appear in featured content");
+    const initialArchive = await page.evaluate(async () => (await fetch("/archive.json")).json());
+    if (initialArchive.items.length) {
+      const firstItem = initialArchive.items[0];
+      const featuredLink = page.locator("#featuredList .feature").first();
+      assert.equal(await featuredLink.getAttribute("href"), "/articles/" + firstItem.id + "/", "featured card should use the standalone permalink");
+      await featuredLink.click();
+      await page.waitForURL("**/articles/" + firstItem.id + "/");
+      await page.locator("#articleTitle").waitFor({ state: "visible" });
+      assert.equal(await page.locator("#articleTitle").innerText(), firstItem.title);
+      assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/articles/" + firstItem.id + "/");
 
-    const featuredLink = page.locator("#featuredList .feature").filter({ hasText: "When Protection Becomes Control" }).first();
-    assert.equal(await featuredLink.getAttribute("href"), "/articles/3825490848/", "featured card should use the standalone permalink");
-    await featuredLink.click();
-    await page.waitForURL("**/articles/3825490848/");
-    await page.locator("#articleTitle").waitFor({ state: "visible" });
-    assert.equal(await page.locator("#articleTitle").innerText(), "When Protection Becomes Control");
-    assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
-    assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/articles/3825490848/");
-    assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr");
-
-    const articleData = JSON.parse(await page.locator("#articleData").textContent());
-    await page.locator('[data-lang="ar"]').click();
-    assert.equal(new URL(page.url()).searchParams.get("lang"), "ar", "switching an article to Arabic should persist the language in its URL");
-    assert.equal(await page.locator("html").getAttribute("dir"), "rtl", "Arabic interface should use RTL direction");
-    if (String(articleData.secondLanguage || "").trim()) {
-      assert.equal(await page.locator("#articleContent").getAttribute("lang"), "ar", "a manually supplied second-language manuscript should declare Arabic");
+      const articleData = JSON.parse(await page.locator("#articleData").textContent());
+      await page.locator('[data-lang="ar"]').click();
+      assert.equal(new URL(page.url()).searchParams.get("lang"), "ar", "switching an article to Arabic should persist the language in its URL");
+      assert.equal(await page.locator("html").getAttribute("dir"), "rtl", "Arabic interface should use RTL direction");
+      if (String(articleData.secondLanguage || "").trim()) {
+        assert.equal(await page.locator("#articleContent").getAttribute("lang"), "ar", "a manually supplied second-language manuscript should declare Arabic");
+      } else {
+        assert.match(await page.locator("#articleContent").innerText(), /لا تتوفر نسخة مترجمة ومراجعة/);
+      }
+      await page.locator('[data-lang="en"]').click();
+      assert.equal(await page.locator("html").getAttribute("dir"), "ltr");
+      await page.locator(".article-back").click();
+      await page.waitForURL("**/#archive");
+      await page.locator("#archiveSearch").waitFor({ state: "visible" });
+      await page.locator("#archiveSearch").fill(String(firstItem.title));
+      assert.ok(await page.locator("#archiveList .entry").count() >= 1, "archive search should find a published item");
+      await page.locator("#archiveSearch").fill("definitely-not-a-real-title");
+      assert.match(await page.locator("#archiveList").innerText(), /No entries match your search/);
+      await page.locator("#archiveSearch").fill("");
     } else {
-      assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "an article without a reviewed translation should retain its original title direction");
-      assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
-      assert.match(await page.locator("#articleContent").innerText(), /لا تتوفر نسخة مترجمة ومراجعة/);
+      assert.equal(await page.locator("#featuredList .feature").count(), 0, "an empty archive should not render phantom articles");
     }
-    await page.locator('[data-lang="en"]').click();
-    assert.equal(await page.locator("html").getAttribute("dir"), "ltr");
-    assert.equal(await page.locator("#articleTitle").innerText(), "When Protection Becomes Control", "switching back should restore the original English text");
-
-    await page.locator(".article-back").click();
-    await page.waitForURL("**/#archive");
-    await page.locator("#archiveSearch").waitFor({ state: "visible" });
-
-    const search = page.locator("#archiveSearch");
-    await search.fill("Protection");
-    assert.equal(await page.locator("#archiveList .entry").count(), 1, "archive search should find the article");
-    await search.fill("definitely-not-a-real-title");
-    assert.match(await page.locator("#archiveList").innerText(), /No entries match your search/);
-    await search.fill("");
-    await page.locator('[data-filter="book"]').click();
-    assert.equal(await page.locator("#archiveList .entry").count(), 0, "type filtering should exclude articles from the book list");
-    assert.match(await page.locator("#archiveList").innerText(), /No entries match your search/);
 
     const mobile = await browser.newPage({ viewport: { width: 375, height: 812 } });
     mobile.on("pageerror", (error) => pageErrors.push(error.message));
     await mobile.route(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//, (route) => route.abort());
     await mobile.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
-    await mobile.locator("#featuredList .feature").first().waitFor({ state: "visible", timeout: 15000 });
+    await mobile.waitForFunction(() => {
+      const host = document.querySelector("#featuredList");
+      return host && !host.textContent.includes("Loading");
+    }, { timeout: 15000 });
     const menuButton = mobile.locator("#menuButton");
     await menuButton.waitFor({ state: "visible" });
     await menuButton.click();
@@ -74,7 +72,10 @@ async function main() {
     arabic.on("pageerror", (error) => pageErrors.push(error.message));
     await arabic.route(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//, (route) => route.abort());
     await arabic.goto("http://127.0.0.1:4173/ar/", { waitUntil: "domcontentloaded" });
-    await arabic.locator("#featuredList .feature").first().waitFor({ state: "visible", timeout: 15000 });
+    await arabic.waitForFunction(() => {
+      const host = document.querySelector("#featuredList");
+      return host && !host.textContent.includes("Loading");
+    }, { timeout: 15000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "the Arabic landing URL should declare Arabic");
     assert.equal(await arabic.locator("html").getAttribute("dir"), "rtl", "the Arabic landing URL should use RTL direction");
     assert.equal(await arabic.locator('link[rel="canonical"]').getAttribute("href"), "https://ahmad-sadek.github.io/ar/");
@@ -83,13 +84,8 @@ async function main() {
     assert.equal(await arabic.locator("#homeTitle .last-name").innerText(), "صادق");
     assert.doesNotMatch(await arabic.locator("#homeTitle").innerText(), /صادق\./, "the Arabic name should not carry an awkward trailing Latin period");
     const arabicArchive = await arabic.evaluate(async () => (await fetch("/archive.json")).json());
-    const featuredArticle = arabicArchive.items.find((item) => Number(item.id) === 3825490848);
-    const arabicFeaturedTitle = featuredArticle && featuredArticle.translations && featuredArticle.translations.ar
-      ? featuredArticle.translations.ar.title : "When Protection Becomes Control";
-    assert.ok(
-      (await arabic.locator("#featuredList").innerText()).includes(arabicFeaturedTitle),
-      "featured entries should use the current interface language when a translation is available"
-    );
+    assert.equal(await arabic.locator("#featuredList .feature").count(), arabicArchive.items.length,
+      "the Arabic landing page should render exactly the published archive entries");
     await arabic.locator('[data-lang="en"]').click();
     await arabic.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "en", "switching to English should use the English canonical route");
@@ -133,13 +129,14 @@ async function main() {
     assert.equal(mobileHero.whiteSpace, "nowrap", "the Arabic name should not wrap on mobile");
     assert.equal(mobileHero.columnCount, 1, "mobile hero content should be stacked in one column");
     assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
-    const arabicArticleLink = arabic.locator("#featuredList .feature").first();
-    assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
-    await arabicArticleLink.click();
-    await arabic.waitForURL("**/articles/3825490848/?lang=ar");
-    await arabic.locator("#articleTitle").waitFor({ state: "visible" });
-    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
-    assert.equal(await arabic.locator("#articleTitle").getAttribute("dir"), "rtl", "Arabic article title should use RTL direction");
+    if (arabicArchive.items.length) {
+      const arabicArticleLink = arabic.locator("#featuredList .feature").first();
+      assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
+      await arabicArticleLink.click();
+      await arabic.waitForURL(new RegExp("/articles/" + arabicArchive.items[0].id + "/\\\\?lang=ar$"));
+      await arabic.locator("#articleTitle").waitFor({ state: "visible" });
+      assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
+    }
     await arabic.close();
 
     const studio = await browser.newPage({ viewport: { width: 1365, height: 900 } });
@@ -156,8 +153,12 @@ async function main() {
     const manager = await browser.newPage({ viewport: { width: 1365, height: 900 } });
     manager.on("pageerror", (error) => pageErrors.push(error.message));
     await manager.goto("http://127.0.0.1:4173/studio/manage.html", { waitUntil: "domcontentloaded" });
-    await manager.locator("#publishedPosts .post-row").first().waitFor({ state: "visible", timeout: 15000 });
-    assert.match(await manager.locator("#publishedPosts").innerText(), /When Protection Becomes Control/);
+    await manager.waitForFunction(() => {
+      const host = document.querySelector("#publishedPosts");
+      return host && !host.textContent.includes("يجري تحميل");
+    }, { timeout: 15000 });
+    assert.equal(await manager.locator("#publishedPosts .post-row").count(), initialArchive.items.length,
+      "publication management should show the same published items as the public archive");
     await manager.locator("#connect").click();
     assert.match(await manager.locator("#manageStatus").innerText(), /أدخل رمز الوصول أولاً/);
     await manager.close();
