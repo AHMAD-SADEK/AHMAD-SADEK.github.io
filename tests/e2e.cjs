@@ -133,7 +133,7 @@ async function main() {
       const arabicArticleLink = arabic.locator("#featuredList .feature").first();
       assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
       await arabicArticleLink.click();
-      await arabic.waitForURL(new RegExp("/articles/" + arabicArchive.items[0].id + "/\\\\?lang=ar$"));
+      await arabic.waitForURL((url) => url.pathname === "/articles/" + arabicArchive.items[0].id + "/" && url.searchParams.get("lang") === "ar");
       await arabic.locator("#articleTitle").waitFor({ state: "visible" });
       assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
     }
