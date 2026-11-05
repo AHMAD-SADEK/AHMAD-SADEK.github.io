@@ -99,7 +99,7 @@ async function main() {
     await arabic.waitForURL((url) => url.pathname === "/ar/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
     const arabicArticleLink = arabic.locator("#featuredList .feature").first();
-    assert.match(await arabicArticleLink.getAttribute("href"), /\\?lang=ar$/, "Arabic archive links should carry an explicit language");
+    assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
     await arabicArticleLink.click();
     await arabic.waitForURL("**/articles/3825490848/?lang=ar");
     await arabic.locator("#articleTitle").waitFor({ state: "visible" });
