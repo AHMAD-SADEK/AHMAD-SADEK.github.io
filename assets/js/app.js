@@ -60,8 +60,7 @@
       abstract: "Abstract", references: "References", attachments: "Attached files",
       relatedLinks: "Related links", openFile: "Open / download", articleSource: "View source on GitHub",
       readingTime: "Reading time", by: "By",
-      translationFallback: "This entry is shown in its original language because a translation is not available.",
-      machineTranslation: "Machine translation — review recommended.",
+      translationFallback: "No reviewed translation has been provided; the original text is shown.",
       categories: {
         pharmacy: "Medicine & Pharmacy", engineering: "Engineering & Technology",
         thought: "Thought & Philosophy", personal: "Personal", academic: "Academic", general: "General"
@@ -123,8 +122,7 @@
       abstract: "الملخص", references: "المراجع", attachments: "الملفات المرفقة",
       relatedLinks: "روابط ذات صلة", openFile: "فتح / تنزيل", articleSource: "عرض المصدر على GitHub",
       readingTime: "وقت القراءة", by: "بقلم",
-      translationFallback: "هذه المادة معروضة بلغتها الأصلية لعدم توفر ترجمة.",
-      machineTranslation: "ترجمة آلية — يُنصح بمراجعة النص والمصطلحات.",
+      translationFallback: "لا تتوفر نسخة مترجمة ومراجعة لهذه اللغة؛ لذلك يُعرض النص الأصلي.",
       categories: {
         pharmacy: "الطب والصيدلة", engineering: "الهندسة والتقنية",
         thought: "الفكر والفلسفة", personal: "المساحة الشخصية", academic: "أكاديمي", general: "عام"
@@ -608,13 +606,7 @@
     }
     host.appendChild(meta);
 
-    if (localized.machineTranslated) {
-      const notice = document.createElement("p");
-      notice.className = "small-meta translation-note";
-      notice.dir = displayLanguage === "ar" ? "rtl" : "ltr";
-      safeText(notice, t("machineTranslation"));
-      host.appendChild(notice);
-    } else if (!hasTranslation && currentLanguage !== primaryLanguage) {
+    if (!hasTranslation && currentLanguage !== primaryLanguage) {
       const note = document.createElement("p");
       note.className = "small-meta";
       note.dir = "auto";
