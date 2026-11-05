@@ -1,6 +1,6 @@
 # Repository-native publishing
 
-This folder is the source of truth for long-form publications. It is file-based: no external database, CMS, hosting provider, or service account is required.
+This folder is the single source of truth for publications. All published work is stored as Markdown and metadata files in this repository.
 
 ## Create a publication
 
@@ -23,37 +23,38 @@ Example `metadata.json`:
   "subtitle": "An optional short description",
   "type": "writing",
   "category": "thought",
-  "language": "Arabic",
+  "language": "English",
   "author": "Ahmad Sadek",
   "date": "2026-11-05",
   "status": "draft",
   "tags": ["essay", "philosophy"],
   "coverImage": "",
   "abstract": "",
-  "readingTime": ""
+  "readingTime": "",
+  "secondLanguageFile": ""
 }
 ```
 
 Only `title`, `type`, and `status` are required. Type must be one of `writing`, `research`, `book`, `project`, `idea`, or `personal`. Status must be `draft` or `published`. Draft manuscripts remain in the repository but are excluded from the public archive. Never store secrets or credentials in this public repository.
 
-Put the complete work in `content.md`. There is no GitHub Issue body limit on this file. Use Markdown headings, lists, tables, quotations, code blocks, links, images, and references naturally. References do not need a separate metadata field; keep them in the manuscript where they belong.
+Put the complete original work in `content.md`. Use Markdown headings, lists, tables, quotations, code blocks, links, images, and references naturally. Keep references with the manuscript where appropriate.
 
-Optional sibling Markdown files may be referenced with `secondLanguageFile` and `referencesFile`, each containing a simple filename such as `content-en.md` or `references.md`. Optional `attachments` and `links` accept external HTTPS URLs. Upload images and documents under `assets/uploads/` and link to them in the manuscript using site-root paths.
+## Human-reviewed second-language versions
 
-## Automatic Arabic–English versions
+The site does not generate automatic translations. When a human-reviewed second-language manuscript is ready, save it as a sibling Markdown file, such as `content-ar.md`, and set `"secondLanguageFile": "content-ar.md"` in `metadata.json`. The manuscript's `language` field identifies the original language; the second-language file is the authored version for the other language.
 
-Every published item is prepared in both Arabic and English. The language selected for the manuscript remains the canonical original; GitHub Actions generates the other language with the open-source M2M100 neural translation model. The generated version is stored with the archive data, so switching the site language does not wait for a live translation service.
+The reader displays the supplied second-language manuscript when available. If the file is absent, visitors see the original text with a notice that no reviewed translation has been supplied. There is no automatic substitution with machine-generated prose.
 
-The original text is preserved. A manually supplied second-language manuscript takes precedence over automatic translation for the article body. Automatically translated text is marked as machine-translated in the reader. Please review medical, pharmaceutical, scientific, legal, and other specialist terminology before relying on a translated version.
+For specialist material, including pharmaceutical, medical, scientific, and legal writing, translations must be reviewed by a person with relevant language and subject-matter competence. Verify terminology, numerical values, units, references, and the meaning of every claim against the original before publishing.
 
-Translations are generated during publication builds and reused when the original manuscript has not changed.
+Optional sibling Markdown files may also be referenced with `referencesFile`. Optional `attachments` and `links` accept external HTTPS URLs. Upload images and documents under `assets/uploads/` and link to them in the manuscript using site-root paths.
 
-## Publish, edit, and unpublish
+## Publish, edit, unpublish, and delete
 
 - **Draft:** leave `"status": "draft"`.
 - **Publish:** change it to `"status": "published"` and commit.
 - **Edit:** edit `content.md` or `metadata.json` and commit.
 - **Unpublish:** change the status back to `"draft"`.
-- **Delete:** remove the publication folder and commit.
+- **Delete:** use **Publication Management** from the Publishing Studio. This permanently removes the publication's source folder from the repository and triggers archive regeneration.
 
-GitHub Actions validates the content, builds `archive.json`, creates the standalone article page, and updates the sitemap. Existing GitHub Issue publications continue to work alongside these files.
+The build workflow validates the content, builds `archive.json`, creates standalone article pages, removes stale generated pages, and updates the sitemap.
