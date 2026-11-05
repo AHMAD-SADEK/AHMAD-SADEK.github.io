@@ -36,6 +36,19 @@
         document.body.appendChild(script);
       }
     }
+
+    const manageLink = document.createElement("a");
+    manageLink.href = "/studio/manage.html";
+    manageLink.textContent = "إدارة المنشورات";
+    manageLink.setAttribute("aria-label", "إدارة المنشورات وحذفها");
+    Object.assign(manageLink.style, {
+      position: "fixed", insetInlineStart: "22px", bottom: "22px", zIndex: "9999",
+      display: "inline-block", padding: "12px 18px", border: "1px solid #b9aa8c",
+      borderRadius: "999px", background: "#292720", color: "#f8f5ed",
+      font: "600 13px/1.4 system-ui, sans-serif", textDecoration: "none",
+      boxShadow: "0 8px 24px rgba(35, 31, 24, .16)"
+    });
+    document.body.appendChild(manageLink);
   } catch (error) {
     document.body.textContent = error && error.message ? error.message : "تعذر فتح الاستوديو.";
   }
