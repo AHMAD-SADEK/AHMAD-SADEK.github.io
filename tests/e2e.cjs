@@ -39,6 +39,7 @@ async function main() {
     } else {
       assert.equal(await page.locator("#articleTitle").getAttribute("dir"), "ltr", "legacy untranslated articles should retain their source direction");
       assert.match(await page.locator("#articleContent").innerText(), /A recurring difficulty/);
+      assert.match(await page.locator("#articleContent").innerText(), /لا تتوفر نسخة مترجمة ومراجعة/);
     }
     await page.locator('[data-lang="en"]').click();
     assert.equal(await page.locator("html").getAttribute("dir"), "ltr");
@@ -154,6 +155,15 @@ async function main() {
     assert.match(await studio.locator("#loginStatus").innerText(), /أدخل رمز الوصول أولاً/, "the studio should validate an empty token without attempting an API write");
     assert.equal(await studio.locator("#workspace").isHidden(), true, "the publishing workspace should remain locked before authentication");
     assert.equal(await studio.evaluate(() => window.__archiveStudioRetryInstalled === true), true, "the studio should install its automatic fast-forward retry handler");
+
+    const manager = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+    manager.on("pageerror", (error) => pageErrors.push(error.message));
+    await manager.goto("http://127.0.0.1:4173/studio/manage.html", { waitUntil: "domcontentloaded" });
+    await manager.locator("#publishedPosts .post-row").first().waitFor({ state: "visible", timeout: 15000 });
+    assert.match(await manager.locator("#publishedPosts").innerText(), /When Protection Becomes Control/);
+    await manager.locator("#connect").click();
+    assert.match(await manager.locator("#manageStatus").innerText(), /أدخل رمز الوصول أولاً/);
+    await manager.close();
 
     let patchCalls = 0;
     const treeCalls = [];
