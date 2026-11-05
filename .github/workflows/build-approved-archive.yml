@@ -2,7 +2,7 @@ name: Build approved archive
 
 on:
   issues:
-    types: [opened, edited, closed, reopened, labeled, unlabeled]
+    types: [opened, edited, closed, reopened, labeled, unlabeled, deleted]
   push:
     branches: [main]
     paths:
