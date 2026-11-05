@@ -98,13 +98,6 @@ async function main() {
     await arabic.locator('[data-lang="ar"]').click();
     await arabic.waitForURL((url) => url.pathname === "/ar/", { timeout: 10000 });
     assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "switching to Arabic should use the Arabic canonical route");
-    const arabicArticleLink = arabic.locator("#featuredList .feature").first();
-    assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
-    await arabicArticleLink.click();
-    await arabic.waitForURL("**/articles/3825490848/?lang=ar");
-    await arabic.locator("#articleTitle").waitFor({ state: "visible" });
-    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
-    assert.equal(await arabic.locator("#articleTitle").getAttribute("dir"), "rtl", "Arabic article title should use RTL direction");
 
     await arabic.setViewportSize({ width: 1365, height: 900 });
     const desktopHero = await arabic.locator("#homeTitle").evaluate((el) => {
@@ -142,6 +135,13 @@ async function main() {
     assert.equal(mobileHero.whiteSpace, "nowrap", "the Arabic name should not wrap on mobile");
     assert.equal(mobileHero.columnCount, 1, "mobile hero content should be stacked in one column");
     assert.equal(mobileHero.fits, true, "the Arabic name should fit without horizontal overflow on mobile");
+    const arabicArticleLink = arabic.locator("#featuredList .feature").first();
+    assert.match(await arabicArticleLink.getAttribute("href"), /[?]lang=ar$/, "Arabic archive links should carry an explicit language");
+    await arabicArticleLink.click();
+    await arabic.waitForURL("**/articles/3825490848/?lang=ar");
+    await arabic.locator("#articleTitle").waitFor({ state: "visible" });
+    assert.equal(await arabic.locator("html").getAttribute("lang"), "ar", "article opened from Arabic archive should render in Arabic");
+    assert.equal(await arabic.locator("#articleTitle").getAttribute("dir"), "rtl", "Arabic article title should use RTL direction");
     await arabic.close();
 
     const studio = await browser.newPage({ viewport: { width: 1365, height: 900 } });
