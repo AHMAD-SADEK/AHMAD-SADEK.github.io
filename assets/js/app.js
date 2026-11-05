@@ -334,11 +334,16 @@
     return blob.includes(query.toLocaleLowerCase(currentLanguage === "ar" ? "ar" : "en"));
   }
 
+  function articleHref(item) {
+    const path = "/articles/" + encodeURIComponent(String(item.id)) + "/";
+    return currentLanguage === "ar" ? path + "?lang=ar" : path;
+  }
+
   function createEntry(item) {
     const localized = localizedFields(item);
     const link = document.createElement("a");
     link.className = "entry";
-    link.href = "/articles/" + encodeURIComponent(String(item.id)) + "/";
+    link.href = articleHref(item);
     link.setAttribute("aria-label", (localized.title || item.title) + " — " + typeLabel(item.type));
 
     const type = document.createElement("div");
@@ -406,7 +411,7 @@
     latest.forEach((item) => {
       const link = document.createElement("a");
       link.className = "feature";
-      link.href = "/articles/" + encodeURIComponent(String(item.id)) + "/";
+      link.href = articleHref(item);
       const label = document.createElement("small");
       safeText(label, typeLabel(item.type) + (categoryLabel(item.category) ? " · " + categoryLabel(item.category) : ""));
       const heading = document.createElement("h3");
