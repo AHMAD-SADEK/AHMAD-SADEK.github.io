@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Validate Python syntax
-        run: python -m py_compile scripts/build_archive.py scripts/translate_archive.py tests/test_build_archive.py tests/test_translate_archive.py
+        run: python -m py_compile scripts/build_archive.py tests/test_build_archive.py
       - name: Run archive security tests
         run: python -m unittest discover -s tests -v
       - name: Validate published archive JSON
@@ -36,6 +36,7 @@ jobs:
           node --check assets/js/app.js
           node --check assets/js/article.js
           node --check assets/js/studio-bootstrap.js
+          node --check assets/js/studio-manage.js
           node --check assets/js/studio-retry.js
           python - <<'PY'
           import gzip
